@@ -12,8 +12,9 @@ public sealed class Manager : MonoBehaviour
     private static readonly object padlock = new object();
 
     public string[] keyActions;
-    public string[] keyActionTrigger;
-    public string[] standardKeyActionTrigger;
+    public string[] keyTrigger;
+    public string[] standardKeyTrigger;
+    public Dictionary<string, string> keyActionTriggers = new Dictionary<string, string>();
 
     public string version;
 
@@ -73,7 +74,7 @@ public sealed class Manager : MonoBehaviour
                     "RestartGame",     // 43 (Removed)
                 };
 
-                standardKeyActionTrigger = new string[keyActionCount]
+                standardKeyTrigger = new string[keyActionCount]
                 {
                     "ArrowLeft",//1
                     "ArrowRight",//2
@@ -119,8 +120,8 @@ public sealed class Manager : MonoBehaviour
                     "",//42
                     "",//43
                 };
-                keyActionTrigger = new string[keyActionCount];
-                standardKeyActionTrigger.CopyTo(keyActionTrigger, 0);
+                keyTrigger = new string[keyActionCount];
+                standardKeyTrigger.CopyTo(keyTrigger, 0);
                 //for (int i = 0; i < keyActionTrigger.Length; i++)
                 //{
                 //    if (PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger") != "")
@@ -135,6 +136,10 @@ public sealed class Manager : MonoBehaviour
                 //        }
                 //    }
                 //}
+                for (int i = 0; i < keyActions.Length; i++)
+                {
+                    keyActionTriggers.Add(keyActions[i], keyTrigger[i]);
+                }
             }
             else if (m != this) Destroy(gameObject);
         }

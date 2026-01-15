@@ -7,34 +7,44 @@ public class PlayerController : MonoBehaviour
     public GameObject playerObject;
     public Rigidbody2D rb;
 
+    public Transform groundCheck;
+    public float groundDistance = 0.1f;
+    public LayerMask groundLayer;
+
     public float gravity;
     public float maxFallSpeed;
     public float jumpPower;
     public float horizontalSpeed;
 
+    bool canInterruptJump;
+    bool pressedJump;
+
     PlayerMovementDirection playerMovementDirection;
-    // Start is called before the first frame update
     void Start()
     {
         rb.gravityScale = 0;
     }
 
-    // Update is called once per frame
+    void Update()
+    {
+        pressedJump = pressedJump || GameInputManager.GetManagerKeyDown("Jump");
+
+    }
     void FixedUpdate()
     {
         Vector2 velocity = rb.velocity;
-
-        velocity = CheckMovementInputs(velocity);
-        velocity.y += -1 * gravity * Time.fixedDeltaTime;
-        if (velocity.y > maxFallSpeed)
+        if (IsGrounded(velocity))
         {
-            velocity.y = maxFallSpeed;
+            canInterruptJump = true;
         }
+        velocity = CheckMovementInputs(velocity);
+        velocity = CheckGravity(velocity);
 
         rb.velocity = velocity;
+        pressedJump = false;
     }
 
-    public Vector2 CheckMovementInputs(Vector2 velocity)
+    Vector2 CheckMovementInputs(Vector2 velocity)
     {
         playerMovementDirection = PlayerMovementDirection.None;
         if (GameInputManager.GetManagerKey("Right"))
@@ -61,14 +71,12 @@ public class PlayerController : MonoBehaviour
                 velocity.x = 0;
                 break;
         }
-        if (GameInputManager.GetManagerKey("Jump"))
+        if (pressedJump && IsGrounded(velocity))
         {
-            if (IsGrounded(velocity))
-            {
-                velocity.y += jumpPower;
-            }
+            pressedJump = false;
+            velocity.y += jumpPower;
         }
-        else if (velocity.y > 0)
+        if (GameInputManager.GetManagerKey("Jump") == false && velocity.y > 0 && canInterruptJump)
         {
             velocity.y = 0;
         }
@@ -76,13 +84,24 @@ public class PlayerController : MonoBehaviour
         return velocity;
     }
 
+    Vector2 CheckGravity(Vector2 velocity)
+    {
+        velocity.y += -1 * gravity * Time.fixedDeltaTime;
+        if (velocity.y < -maxFallSpeed)
+        {
+            velocity.y = -maxFallSpeed;
+        }
+        return velocity;
+    }
+
     bool IsGrounded(Vector2 velocity)
     {
-        if (velocity.y == 0)
-        {
-            return true;
-        }
-        return false;
+        return Physics2D.Raycast(
+            groundCheck.position,
+            Vector2.down,
+            groundDistance,
+            groundLayer
+        );
     }
 
     void ResetPlayerMovementDirection()

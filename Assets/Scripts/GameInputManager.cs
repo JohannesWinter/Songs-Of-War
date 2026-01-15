@@ -365,15 +365,15 @@ public static class GameInputManager
     }
     public static bool GetManagerKeyDown(string managerKey)
     {
-        return GetKeyDown(Manager.m.keyActionTrigger[Array.IndexOf(Manager.m.keyActions, managerKey)]);
+        return GetKeyDown(Manager.m.keyActionTriggers[managerKey]);
     }
     public static bool GetManagerKeyUp(string managerKey)
     {
-        return GetKeyUp(Manager.m.keyActionTrigger[Array.IndexOf(Manager.m.keyActions, managerKey)]);
+        return GetKeyUp(Manager.m.keyActionTriggers[managerKey]);
     }
     public static bool GetManagerKey(string managerKey)
     {
-        return GetKey(Manager.m.keyActionTrigger[Array.IndexOf(Manager.m.keyActions, managerKey)]);
+        return GetKey(Manager.m.keyActionTriggers[managerKey]);    
     }
 
     public static KeyCode[] GetKeyCodes()
