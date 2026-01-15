@@ -319,27 +319,14 @@ public static class GameInputManager
 
     public static bool GetKeyDown(string keyMap)
     {
-        string[] keys = keyMap.Split('+');
-
-        if (keys.Length == 1)
+        if (keyMap != "" && keyMap != null)
         {
-            for (int i = 0; i < keyMaps.Length; i++)
-            {
-                if (Input.GetKey(keyMapping[keyMaps[i]]) && keyMaps[i] != keys[0])
-                {
-                    return false;
-                }
-            }
-            return Input.GetKeyDown(keyMapping[keys[0]]);
+            return Input.GetKeyDown(keyMapping[keyMap]);
         }
-
-        for (int i = 0; i < keys.Length - 1; i++)
+        else
         {
-            if (!Input.GetKey(keyMapping[keys[i]]))
-                return false;
+            return false;
         }
-
-        return Input.GetKeyDown(keyMapping[keys[keys.Length - 1]]);
     }
     public static bool GetKeyUp(string keyMap)
     {
