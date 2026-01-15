@@ -6,7 +6,12 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject playerObject;
     public Rigidbody2D rb;
+
     public float gravity;
+    public float maxFallSpeed;
+    public float jumpPower;
+    public float horizontalSpeed;
+
     PlayerMovementDirection playerMovementDirection;
     // Start is called before the first frame update
     void Start()
@@ -21,9 +26,9 @@ public class PlayerController : MonoBehaviour
 
         velocity = CheckMovementInputs(velocity);
         velocity.y += -1 * gravity * Time.fixedDeltaTime;
-        if (velocity.y > 10)
+        if (velocity.y > maxFallSpeed)
         {
-            velocity.y = 10;
+            velocity.y = maxFallSpeed;
         }
 
         rb.velocity = velocity;
@@ -47,10 +52,10 @@ public class PlayerController : MonoBehaviour
         switch (playerMovementDirection)
         {
             case PlayerMovementDirection.Right:
-                velocity.x = 10;
+                velocity.x = horizontalSpeed;
                 break;
             case PlayerMovementDirection.Left:
-                velocity.x = -10;
+                velocity.x = -horizontalSpeed;
                 break;
             case PlayerMovementDirection.None:
                 velocity.x = 0;
@@ -60,7 +65,7 @@ public class PlayerController : MonoBehaviour
         {
             if (IsGrounded(velocity))
             {
-                velocity.y += 30;
+                velocity.y += jumpPower;
             }
         }
         else if (velocity.y > 0)
