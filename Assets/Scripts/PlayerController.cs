@@ -5,6 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public GameObject playerObject;
+    public Transform playerRoot;
+    public BoxCollider2D playerCollider;
     public Rigidbody2D rb;
 
     public Transform groundCheck;
@@ -19,6 +21,7 @@ public class PlayerController : MonoBehaviour
     public float horizontalMaxSpeed;
     public float horizontalAcceleration;
     public float groundBufferDuration;
+    public float stepHeight;
 
     bool canInterruptJump;
     bool pressedJump;
@@ -68,6 +71,7 @@ public class PlayerController : MonoBehaviour
         {
             canInterruptJump = true;
         }
+        TryStepUp(playerMovementDirection);
         velocity = CheckMovement(velocity);
         velocity = CheckGravity(velocity);
 
@@ -131,7 +135,56 @@ public class PlayerController : MonoBehaviour
         }
         return velocity;
     }
+    void TryStepUp(PlayerMovementDirection playerDirection)
+    {
+        Vector2 origin = (Vector2)playerRoot.transform.position + Vector2.up * 0.05f;
 
+        Vector2 direction = Vector2.zero;
+        switch (playerMovementDirection)
+        {
+            case PlayerMovementDirection.Right:
+                direction = Vector2.right;
+                break;
+            case PlayerMovementDirection.Left:
+                direction = Vector2.left;
+                break;
+            case PlayerMovementDirection.None:
+                return;
+        }
+
+        RaycastHit2D lowerHit = Physics2D.Raycast(
+            origin,
+            Vector2.right * direction,
+            0.05f + playerCollider.size.x / 2,
+            groundLayer
+        );
+
+        if (!lowerHit) return;
+
+        RaycastHit2D upperHit = Physics2D.Raycast(
+            origin + Vector2.up * stepHeight,
+            Vector2.right * direction,
+            0.05f + playerCollider.size.x / 2,
+            groundLayer
+        );
+        float currentStepHeight = stepHeight;
+        while (upperHit)
+        {
+            RaycastHit2D newHit = Physics2D.Raycast(
+                origin + Vector2.up * (currentStepHeight - stepHeight / 20),
+                Vector2.right * direction,
+                0.05f + playerCollider.size.x / 2,
+                groundLayer
+            );
+            if (newHit) return;
+            else currentStepHeight -= stepHeight / 20;
+        }
+
+        if (!upperHit)
+        {
+            transform.position += Vector3.up * currentStepHeight;
+        }
+    }
     bool IsGrounded(Vector2 velocity)
     {
         bool grounded = velocity.y == 0;
@@ -146,6 +199,7 @@ public class PlayerController : MonoBehaviour
     {
         playerMovementDirection = PlayerMovementDirection.None;
     }
+
 }
 
 enum PlayerMovementDirection
