@@ -155,7 +155,7 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D lowerHit = Physics2D.Raycast(
             origin,
             Vector2.right * direction,
-            0.05f + playerCollider.size.x / 2,
+            playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
             groundLayer
         );
 
@@ -164,25 +164,34 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D upperHit = Physics2D.Raycast(
             origin + Vector2.up * stepHeight,
             Vector2.right * direction,
-            0.05f + playerCollider.size.x / 2,
+            playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
             groundLayer
         );
         float currentStepHeight = stepHeight;
-        while (upperHit)
+        int counter = 5;
+        while (counter > 0)
         {
             RaycastHit2D newHit = Physics2D.Raycast(
-                origin + Vector2.up * (currentStepHeight - stepHeight / 20),
+                origin + Vector2.up * (currentStepHeight - stepHeight / 5),
                 Vector2.right * direction,
-                0.05f + playerCollider.size.x / 2,
+                playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
                 groundLayer
             );
-            if (newHit) return;
-            else currentStepHeight -= stepHeight / 20;
+            if (!newHit)
+            {
+                upperHit = newHit;
+                currentStepHeight -= stepHeight / 5;
+            }
+            else
+            {
+                break;
+            }
+            counter--;
         }
 
         if (!upperHit)
         {
-            transform.position += Vector3.up * currentStepHeight;
+            transform.position += Vector3.up * (currentStepHeight + stepHeight / 5);
         }
     }
     bool IsGrounded(Vector2 velocity)
