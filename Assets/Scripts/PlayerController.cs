@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject playerObject;
     public Transform playerRoot;
+    public Transform playerTop;
     public BoxCollider2D playerCollider;
     public Rigidbody2D rb;
 
@@ -71,7 +72,8 @@ public class PlayerController : MonoBehaviour
         {
             canInterruptJump = true;
         }
-        TryStepUp(playerMovementDirection);
+        TryStepUp(velocity);
+        TryClimbUp(velocity);
         velocity = CheckMovement(velocity);
         velocity = CheckGravity(velocity);
 
@@ -135,8 +137,10 @@ public class PlayerController : MonoBehaviour
         }
         return velocity;
     }
-    void TryStepUp(PlayerMovementDirection playerDirection)
+    void TryStepUp(Vector2 currentVelocity)
     {
+        if (IsGrounded(currentVelocity) == false) { return; }
+
         Vector2 origin = (Vector2)playerRoot.transform.position + Vector2.up * 0.05f;
 
         Vector2 direction = Vector2.zero;
@@ -191,8 +195,64 @@ public class PlayerController : MonoBehaviour
 
         if (!upperHit)
         {
-            transform.position += Vector3.up * (currentStepHeight + stepHeight / 5);
+            transform.position += Vector3.up * (currentStepHeight + stepHeight / 5) + (Vector3)direction * 0.03f;
         }
+    }
+    void TryClimbUp(Vector2 currentVelocity)
+    {
+        if (IsGrounded(currentVelocity) == true) { return; }
+
+        Vector2 origin = (Vector2)playerRoot.transform.position - Vector2.up * 0.05f;
+
+        Vector2 direction = Vector2.zero;
+        switch (playerMovementDirection)
+        {
+            case PlayerMovementDirection.Right:
+                direction = Vector2.right;
+                break;
+            case PlayerMovementDirection.Left:
+                direction = Vector2.left;
+                break;
+            case PlayerMovementDirection.None:
+                return;
+        }
+        bool foundHit = Physics2D.Raycast(
+            origin,
+            Vector2.right * direction,
+            playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
+            groundLayer
+        );
+        float currentHeight = 0;
+        float maxHeight = playerObject.transform.localScale.y * 0.5f;
+
+        while (foundHit == true && currentHeight < maxHeight)
+        {
+            currentHeight += 0.05f;
+            foundHit = Physics2D.Raycast(
+                origin + Vector2.up * currentHeight,
+                Vector2.right * direction,
+                playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
+                groundLayer
+            );
+        }
+
+        if (foundHit == true) return;
+
+        maxHeight = currentHeight + playerObject.transform.localScale.y; 
+
+        while (currentHeight <= maxHeight)
+        {
+            currentHeight += playerObject.transform.localScale.y / 100;
+            foundHit = Physics2D.Raycast(
+                origin + Vector2.up * currentHeight,
+                Vector2.right * direction,
+                playerCollider.size.x * playerObject.transform.localScale.x,
+                groundLayer
+            );
+            if (foundHit == true) return;
+        }
+
+        print("ClimUp");
     }
     bool IsGrounded(Vector2 velocity)
     {
