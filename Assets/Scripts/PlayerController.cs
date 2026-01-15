@@ -4,15 +4,91 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject playerObject;
+    public Rigidbody2D rb;
+    public float gravity;
+    PlayerMovementDirection playerMovementDirection;
     // Start is called before the first frame update
     void Start()
     {
-        
+        rb.gravityScale = 0;
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        Vector2 velocity = rb.velocity;
+
+        velocity = CheckMovementInputs(velocity);
+        velocity.y += -1 * gravity * Time.fixedDeltaTime;
+        if (velocity.y > 10)
+        {
+            velocity.y = 10;
+        }
+
+        rb.velocity = velocity;
     }
+
+    public Vector2 CheckMovementInputs(Vector2 velocity)
+    {
+        playerMovementDirection = PlayerMovementDirection.None;
+        if (GameInputManager.GetManagerKey("Right"))
+        {
+            playerMovementDirection = PlayerMovementDirection.Right;
+        }
+        if (GameInputManager.GetManagerKey("Left"))
+        {
+            playerMovementDirection = PlayerMovementDirection.Left;
+        }
+        if (GameInputManager.GetManagerKey("Left") && GameInputManager.GetManagerKey("Right"))
+        {
+            playerMovementDirection = PlayerMovementDirection.None;
+        }
+        switch (playerMovementDirection)
+        {
+            case PlayerMovementDirection.Right:
+                velocity.x = 10;
+                break;
+            case PlayerMovementDirection.Left:
+                velocity.x = -10;
+                break;
+            case PlayerMovementDirection.None:
+                velocity.x = 0;
+                break;
+        }
+        if (GameInputManager.GetManagerKey("Jump"))
+        {
+            if (IsGrounded(velocity))
+            {
+                velocity.y += 30;
+            }
+        }
+        else if (velocity.y > 0)
+        {
+            velocity.y = 0;
+        }
+        
+        return velocity;
+    }
+
+    bool IsGrounded(Vector2 velocity)
+    {
+        if (velocity.y == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    void ResetPlayerMovementDirection()
+    {
+        playerMovementDirection = PlayerMovementDirection.None;
+    }
+}
+
+enum PlayerMovementDirection
+{
+    None,
+    Right,
+    Left,
 }

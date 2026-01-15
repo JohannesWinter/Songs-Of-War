@@ -28,9 +28,9 @@ public sealed class Manager : MonoBehaviour
                 const int keyActionCount = 43;
                 keyActions = new string[keyActionCount]
                 {
-                    "Settings",        // 1
-                    "Quicksave",       // 2
-                    "AskYes",          // 3
+                    "Left",        // 1
+                    "Right",       // 2
+                    "Jump",          // 3
                     "AskNo",           // 4
                     "EditMode",        // 5
                     "Shop1",           // 6
@@ -75,9 +75,9 @@ public sealed class Manager : MonoBehaviour
 
                 standardKeyActionTrigger = new string[keyActionCount]
                 {
-                    "Esc",//1
-                    "",//2
-                    "Y",//3
+                    "ArrowLeft",//1
+                    "ArrowRight",//2
+                    "W",//3
                     "N",//4
                     "Tab",//5
                     "Q",//6
@@ -121,20 +121,20 @@ public sealed class Manager : MonoBehaviour
                 };
                 keyActionTrigger = new string[keyActionCount];
                 standardKeyActionTrigger.CopyTo(keyActionTrigger, 0);
-                for (int i = 0; i < keyActionTrigger.Length; i++)
-                {
-                    if (PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger") != "")
-                    {
-                        if (PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger") != "--")
-                        {
-                            keyActionTrigger[i] = PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger");
-                        }
-                        else
-                        {
-                            keyActionTrigger[i] = "";
-                        }
-                    }
-                }
+                //for (int i = 0; i < keyActionTrigger.Length; i++)
+                //{
+                //    if (PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger") != "")
+                //    {
+                //        if (PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger") != "--")
+                //        {
+                //            keyActionTrigger[i] = PlayerPrefs.GetString(version + "_" + "Hotkey" + keyActions[i] + "_Trigger");
+                //        }
+                //        else
+                //        {
+                //            keyActionTrigger[i] = "";
+                //        }
+                //    }
+                //}
             }
             else if (m != this) Destroy(gameObject);
         }
