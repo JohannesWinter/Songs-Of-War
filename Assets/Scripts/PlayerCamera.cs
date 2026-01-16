@@ -74,19 +74,29 @@ public class PlayerCamera : MonoBehaviour
                     break;
             }
         }
+
         //vertical
         if ((playerController.up.hold && playerController.down.hold) == false)
         {
             //does not change if up and down are pressed together
             if (playerController.up.hold)
             {
-                newTargetPosition += Vector2.up * cameraOffsetUp;
+                newTargetPosition += Vector2.up * cameraOffsetUp * 0.5f;
             }
             if (playerController.down.hold)
             {
-                newTargetPosition += Vector2.down * cameraOffsetDown;
+                newTargetPosition += Vector2.down * cameraOffsetDown * 0.5f;
             }
         }
+        if (playerController.velocity.y > 0)
+        {
+            newTargetPosition += Vector2.up * Mathf.Min(cameraOffsetUp * playerController.velocity.y / 10 * 0.5f, cameraOffsetUp * 0.5f);
+        }
+        else if (playerController.velocity.y > 0)
+        {
+            newTargetPosition += Vector2.down * Mathf.Min(cameraOffsetDown * playerController.velocity.y / 10 * 0.5f, cameraOffsetDown * 0.5f);
+        }
+
         //set calculated target position
         targetCameraPosition = newTargetPosition;
     }
