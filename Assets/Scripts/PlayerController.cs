@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     public float stepHeight;
     public float wallJumpSlipTime;
     public float wallJumpBufferDuration;
+    public float playerMinGripHeight;
     public bool canWallJump;
 
     bool canInterruptJump;
@@ -375,6 +376,10 @@ public class PlayerController : MonoBehaviour
                 playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
                 groundLayer
             );
+            if (currentHeight > playerObject.transform.localScale.y * (1 - playerMinGripHeight))
+            {
+                return false;
+            }
         }
 
         if (foundHit == false) return false;
@@ -471,13 +476,13 @@ public class PlayerController : MonoBehaviour
         return true;
     }
 
-    bool IsTouchingWall()
+    bool IsTouchingWall(PlayerMovementDirection pMD)
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
-                (Vector2)playerObject.transform.position + Vector2.up * (-playerObject.transform.localScale.y / 2 + (playerObject.transform.localScale.y * i / 5)),
-                GetPlayerMovementDirectionVector(),
+                (Vector2)playerObject.transform.position + Vector2.up * (-playerObject.transform.localScale.y / 2 + (playerObject.transform.localScale.y * i / 10)),
+                GetPlayerMovementDirectionVector(pMD),
                 playerObject.transform.localScale.x / 2 + 0.1f,
                 groundLayer
                 );
@@ -489,9 +494,9 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-    Vector2 GetPlayerMovementDirectionVector()
+    Vector2 GetPlayerMovementDirectionVector(PlayerMovementDirection pMD)
     {
-        switch (playerMovementDirection)
+        switch (pMD)
         {
             case PlayerMovementDirection.Right:
                 return Vector2.right;
@@ -536,6 +541,10 @@ public class PlayerController : MonoBehaviour
                     slipping = true;
                     slipTime = float.MaxValue;
                 }
+                if (IsTouchingWall(pMD) == false)
+                {
+                    break;
+                }
                 yield return null;
             }
         }
@@ -558,6 +567,10 @@ public class PlayerController : MonoBehaviour
                     canHoldOnWall = false;
                     slipping = true;
                     slipTime = float.MaxValue;
+                }
+                if (IsTouchingWall(pMD) == false)
+                {
+                    break;
                 }
                 yield return null;
             }
