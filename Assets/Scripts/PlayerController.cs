@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     bool canInterruptJump;
     bool pressedJump;
     bool holdingJump;
+    bool climbing;
 
 
     PlayerMovementDirection playerMovementDirection;
@@ -67,22 +68,25 @@ public class PlayerController : MonoBehaviour
     }
     void FixedUpdate()
     {
-        Vector2 velocity = rb.velocity;
-        if (IsGrounded(velocity))
+        if (climbing == false)
         {
-            canInterruptJump = true;
-        }
-        TryStepUp(velocity);
-        TryClimbUp(velocity);
-        velocity = CheckMovement(velocity);
-        velocity = CheckGravity(velocity);
+            Vector2 velocity = rb.velocity;
+            if (IsGrounded(velocity))
+            {
+                canInterruptJump = true;
+            }
+            TryStepUp(velocity);
+            TryClimbUp(velocity);
+            velocity = CheckMovement(velocity);
+            velocity = CheckGravity(velocity);
 
-        rb.velocity = velocity;
-        pressedJump = false;
-        enabledGroundBuffer -= Time.fixedDeltaTime;
-        if (enabledGroundBuffer < 0) { enabledGroundBuffer = 0; }
-        disabledGroundBuffer -= Time.fixedDeltaTime;
-        if (disabledGroundBuffer < 0) { disabledGroundBuffer = 0; }
+            rb.velocity = velocity;
+            pressedJump = false;
+            enabledGroundBuffer -= Time.fixedDeltaTime;
+            if (enabledGroundBuffer < 0) { enabledGroundBuffer = 0; }
+            disabledGroundBuffer -= Time.fixedDeltaTime;
+            if (disabledGroundBuffer < 0) { disabledGroundBuffer = 0; }
+        }
     }
 
 
@@ -195,14 +199,14 @@ public class PlayerController : MonoBehaviour
 
         if (!upperHit)
         {
-            transform.position += Vector3.up * (currentStepHeight + stepHeight / 5) + (Vector3)direction * 0.03f;
+            playerObject.transform.position += Vector3.up * (currentStepHeight + stepHeight / 5) + (Vector3)direction * 0.03f;
         }
     }
-    void TryClimbUp(Vector2 currentVelocity)
+    Vector2 TryClimbUp(Vector2 currentVelocity)
     {
-        if (IsGrounded(currentVelocity) == true) { return; }
+        if (IsGrounded(currentVelocity) == true) { return currentVelocity; }
 
-        Vector2 origin = (Vector2)playerRoot.transform.position - Vector2.up * 0.05f;
+        Vector2 origin = (Vector2)playerRoot.transform.position + Vector2.up * 0.05f;
 
         Vector2 direction = Vector2.zero;
         switch (playerMovementDirection)
@@ -214,7 +218,7 @@ public class PlayerController : MonoBehaviour
                 direction = Vector2.left;
                 break;
             case PlayerMovementDirection.None:
-                return;
+                return currentVelocity;
         }
         bool foundHit = Physics2D.Raycast(
             origin,
@@ -224,6 +228,19 @@ public class PlayerController : MonoBehaviour
         );
         float currentHeight = 0;
         float maxHeight = playerObject.transform.localScale.y * 0.5f;
+
+        while (foundHit == false && currentHeight < maxHeight)
+        {
+            currentHeight += 0.05f;
+            foundHit = Physics2D.Raycast(
+                origin + Vector2.up * currentHeight,
+                Vector2.right * direction,
+                playerCollider.size.x * playerObject.transform.localScale.x / 2 + 0.05f,
+                groundLayer
+            );
+        }
+
+        if (foundHit == false) return currentVelocity;
 
         while (foundHit == true && currentHeight < maxHeight)
         {
@@ -236,9 +253,10 @@ public class PlayerController : MonoBehaviour
             );
         }
 
-        if (foundHit == true) return;
+        if (foundHit == true) return currentVelocity;
 
-        maxHeight = currentHeight + playerObject.transform.localScale.y; 
+        maxHeight = currentHeight + playerObject.transform.localScale.y;
+        float targetHeight = currentHeight;
 
         while (currentHeight <= maxHeight)
         {
@@ -249,10 +267,12 @@ public class PlayerController : MonoBehaviour
                 playerCollider.size.x * playerObject.transform.localScale.x,
                 groundLayer
             );
-            if (foundHit == true) return;
+            if (foundHit == true) return currentVelocity;
         }
+        Vector2 targetPosition = new Vector2(playerObject.transform.position.x + direction.x * playerObject.transform.localScale.x / 2, playerObject.transform.position.y + targetHeight);
+        StartCoroutine(ClimbUp(playerObject, targetPosition));
+        return currentVelocity;
 
-        print("ClimUp");
     }
     bool IsGrounded(Vector2 velocity)
     {
@@ -269,6 +289,18 @@ public class PlayerController : MonoBehaviour
         playerMovementDirection = PlayerMovementDirection.None;
     }
 
+    IEnumerator ClimbUp(GameObject playerObject, Vector2 targetPosition)
+    {
+        climbing = true;
+        Vector2 direction = targetPosition - (Vector2)playerObject.transform.position;
+        for (int i = 0; i < 20; i++)
+        {
+            playerObject.transform.position += (Vector3)direction / 20;
+            yield return new WaitForSeconds(0.025f);
+        }
+        yield return null;
+        climbing = false;
+    }
 }
 
 enum PlayerMovementDirection
