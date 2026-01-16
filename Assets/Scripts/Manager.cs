@@ -31,9 +31,9 @@ public sealed class Manager : MonoBehaviour
                 {
                     "Left",        // 1
                     "Right",       // 2
-                    "Jump",          // 3
-                    "AskNo",           // 4
-                    "EditMode",        // 5
+                    "Up",          // 3
+                    "Down",           // 4
+                    "Jump",        // 5
                     "Shop1",           // 6
                     "Shop2",           // 7
                     "Buy",             // 8
@@ -78,9 +78,9 @@ public sealed class Manager : MonoBehaviour
                 {
                     "ArrowLeft",//1
                     "ArrowRight",//2
-                    "W",//3
-                    "N",//4
-                    "Tab",//5
+                    "ArrowUp",//3
+                    "ArrowDown",//4
+                    "W",//5
                     "Q",//6
                     "W",//7
                     "Enter",//8

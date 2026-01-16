@@ -7,14 +7,15 @@ public class PlayerCamera : MonoBehaviour
     public GameObject cameraObject;
     public PlayerController playerController;
     public float cameraSpeed; // (0,inf)
+    public float cameraOffsetUp, cameraOffsetDown, cameraOffsetRight, cameraOffsetLeft;
 
     public Vector2 currentCameraPosition { get; private set; } //local position
     public Vector2 targetCameraPosition { get; private set; } //local position
 
     void Update()
     {
-
         UpdateCurrentCameraPosition();
+        UpdateTargetCameraPosition();
         UpdateCameraPosition();
     }
 
@@ -40,4 +41,51 @@ public class PlayerCamera : MonoBehaviour
     {
         currentCameraPosition = cameraObject.transform.localPosition;
     }
+    void UpdateTargetCameraPosition()
+    {
+        //updates targetCameraPosition based on movement
+        Vector2 newTargetPosition = Vector2.zero;
+
+        //horizontal
+        if ((playerController.holding || playerController.slipping) == false)
+        {
+            //not holding on wall
+            switch (playerController.playerMovementDirection)
+            {
+                case PlayerMovementDirection.Right:
+                    newTargetPosition += Vector2.right * cameraOffsetRight;
+                    break;
+                case PlayerMovementDirection.Left:
+                    newTargetPosition += Vector2.left * cameraOffsetLeft;
+                    break;
+            }
+        }
+        else
+        {
+            //holding on wall -> inverted
+            switch (playerController.playerMovementDirection)
+            {
+                case PlayerMovementDirection.Right:
+                    newTargetPosition += Vector2.left * cameraOffsetRight;
+                    break;
+                case PlayerMovementDirection.Left:
+                    newTargetPosition += Vector2.right * cameraOffsetLeft;
+                    break;
+            }
+        }
+        //vertical
+        if ((GameInputManager.GetManagerKey("Up") && GameInputManager.GetManagerKey("Down")) == false)
+        {
+            //does not change if up and down are pressed together
+            if (GameInputManager.GetManagerKey("Up"))
+            {
+                newTargetPosition += Vector2.up * cameraOffsetUp;
+            }
+            if (GameInputManager.GetManagerKey("Down"))
+            {
+                newTargetPosition += Vector2.down * cameraOffsetDown;
+            }
+        }
+    }
+    
 }

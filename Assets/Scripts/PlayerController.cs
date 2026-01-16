@@ -39,12 +39,12 @@ public class PlayerController : MonoBehaviour
     float canHoldOnWallTimer;
     bool pressedJump;
     bool holdingJump;
-    bool holding;
-    bool slipping;
+    public bool holding { get; private set; }
+    public bool slipping { get; private set; }
     float holdJumpDirection;
 
 
-    PlayerMovementDirection playerMovementDirection;
+    public PlayerMovementDirection playerMovementDirection { get; private set; }
     void Start()
     {
         rb.gravityScale = 0;
@@ -582,7 +582,7 @@ public class PlayerController : MonoBehaviour
     }
 }
 
-enum PlayerMovementDirection
+public enum PlayerMovementDirection
 {
     None,
     Right,
