@@ -37,11 +37,23 @@ public class PlayerController : MonoBehaviour
     bool canInterruptJump;
     bool canHoldOnWall;
     float canHoldOnWallTimer;
-    bool pressedJump;
-    bool holdingJump;
+    bool pressedJumpFixedUpdate;
+    bool holdingJumpFixedUpdate;
     public bool holding { get; private set; }
     public bool slipping { get; private set; }
     float holdJumpDirection;
+
+    public InputState right;
+    public InputState left;
+    public InputState up;
+    public InputState down;
+    public InputState jump;
+    public InputState hit;
+    public InputState ability1;
+    public InputState ability2;
+    public InputState ability3;
+    public InputState ability4;
+
 
 
     public PlayerMovementDirection playerMovementDirection { get; private set; }
@@ -58,7 +70,8 @@ public class PlayerController : MonoBehaviour
 
     void CheckInputs()
     {
-        pressedJump = pressedJump || GameInputManager.GetManagerKeyDown("Jump");
+        //update fixedUpdate player movement Input
+        pressedJumpFixedUpdate = pressedJumpFixedUpdate || GameInputManager.GetManagerKeyDown("Jump");
         playerMovementDirection = PlayerMovementDirection.None;
         if (GameInputManager.GetManagerKey("Right"))
         {
@@ -74,12 +87,15 @@ public class PlayerController : MonoBehaviour
         }
         if (GameInputManager.GetManagerKey("Jump"))
         {
-            holdingJump = true;
+            holdingJumpFixedUpdate = true;
         }
         else
         {
-            holdingJump = false;
+            holdingJumpFixedUpdate = false;
         }
+
+        //update outside player Input
+        UpdatePublicPlayerInputData();
     }
     void UpdateDebugVisuals()
     {
@@ -151,16 +167,16 @@ public class PlayerController : MonoBehaviour
     void EndParameterAccessibilty()
     {
         //updates Past-Velocity-Update parameters
-        pressedJump = false;
+        pressedJumpFixedUpdate = false;
         positionLastFrame = playerObject.transform.position;
     }
 
     Vector2 CheckMovement(Vector2 velocity)
     {
         //checks jump movement
-        if (pressedJump && (IsGrounded(velocity) || holding || slipping))
+        if (pressedJumpFixedUpdate && (IsGrounded(velocity) || holding || slipping))
         {
-            pressedJump = false;
+            pressedJumpFixedUpdate = false;
             enabledGroundBuffer = 0;
             disabledGroundBuffer = groundBufferDuration;
             velocity.y = jumpPower;
@@ -174,7 +190,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //checks Jump interrupt
-        if (holdingJump == false && velocity.y > 0 && canInterruptJump)
+        if (holdingJumpFixedUpdate == false && velocity.y > 0 && canInterruptJump)
         {
             velocity.y = 0;
         }
@@ -580,6 +596,56 @@ public class PlayerController : MonoBehaviour
         holding = false;
         slipping = false;
     }
+
+    void UpdatePublicPlayerInputData()
+    {
+        // RIGHT
+        right.hold = GameInputManager.GetManagerKey("Right");
+        right.press = GameInputManager.GetManagerKeyDown("Right");
+        right.release = GameInputManager.GetManagerKeyUp("Right");
+
+        // LEFT
+        left.hold = GameInputManager.GetManagerKey("Left");
+        left.press = GameInputManager.GetManagerKeyDown("Left");
+        left.release = GameInputManager.GetManagerKeyUp("Left");
+
+        // UP
+        up.hold = GameInputManager.GetManagerKey("Up");
+        up.press = GameInputManager.GetManagerKeyDown("Up");
+        up.release = GameInputManager.GetManagerKeyUp("Up");
+
+        // DOWN
+        down.hold = GameInputManager.GetManagerKey("Down");
+        down.press = GameInputManager.GetManagerKeyDown("Down");
+        down.release = GameInputManager.GetManagerKeyUp("Down");
+
+        // JUMP
+        jump.hold = GameInputManager.GetManagerKey("Jump");
+        jump.press = GameInputManager.GetManagerKeyDown("Jump");
+        jump.release = GameInputManager.GetManagerKeyUp("Jump");
+
+        // HIT
+        hit.hold = GameInputManager.GetManagerKey("Hit");
+        hit.press = GameInputManager.GetManagerKeyDown("Hit");
+        hit.release = GameInputManager.GetManagerKeyUp("Hit");
+
+        // ABILITIES
+        ability1.hold = GameInputManager.GetManagerKey("Ability1");
+        ability1.press = GameInputManager.GetManagerKeyDown("Ability1");
+        ability1.release = GameInputManager.GetManagerKeyUp("Ability1");
+
+        ability2.hold = GameInputManager.GetManagerKey("Ability2");
+        ability2.press = GameInputManager.GetManagerKeyDown("Ability2");
+        ability2.release = GameInputManager.GetManagerKeyUp("Ability2");
+
+        ability3.hold = GameInputManager.GetManagerKey("Ability3");
+        ability3.press = GameInputManager.GetManagerKeyDown("Ability3");
+        ability3.release = GameInputManager.GetManagerKeyUp("Ability3");
+
+        ability4.hold = GameInputManager.GetManagerKey("Ability4");
+        ability4.press = GameInputManager.GetManagerKeyDown("Ability4");
+        ability4.release = GameInputManager.GetManagerKeyUp("Ability4");
+    }
 }
 
 public enum PlayerMovementDirection
@@ -587,4 +653,12 @@ public enum PlayerMovementDirection
     None,
     Right,
     Left,
+}
+
+[System.Serializable]
+public struct InputState
+{
+    public bool hold;
+    public bool press;
+    public bool release;
 }

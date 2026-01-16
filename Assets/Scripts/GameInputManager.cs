@@ -72,7 +72,7 @@ public static class GameInputManager
         "RightAlt",
         "Esc",
         "ArrowUp",
-        "ArroDown",
+        "ArrowDown",
         "ArrowRight",
         "ArrowLeft",
         "F1",

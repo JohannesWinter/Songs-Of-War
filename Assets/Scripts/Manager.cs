@@ -34,11 +34,11 @@ public sealed class Manager : MonoBehaviour
                     "Up",          // 3
                     "Down",           // 4
                     "Jump",        // 5
-                    "Shop1",           // 6
-                    "Shop2",           // 7
-                    "Buy",             // 8
-                    "ExitShop",        // 9
-                    "SwipeRight",      // 10
+                    "Hit",           // 6
+                    "Ability1",           // 7
+                    "Ability2",             // 8
+                    "Ability3",        // 9
+                    "Ability4",      // 10
                     "SwipeLeft",       // 11
                     "CancelBuilding",  // 12 (Removed)
                     "RotateRight",     // 13
@@ -81,12 +81,12 @@ public sealed class Manager : MonoBehaviour
                     "ArrowUp",//3
                     "ArrowDown",//4
                     "W",//5
-                    "Q",//6
-                    "W",//7
-                    "Enter",//8
-                    "Backspace",//9
+                    "S",//6
+                    "Q",//7
+                    "A",//8
+                    "E",//9
                     "D",//10
-                    "A",//11
+                    "",//11
                     "",//12
                     "ClickRight",//13
                     "",//14

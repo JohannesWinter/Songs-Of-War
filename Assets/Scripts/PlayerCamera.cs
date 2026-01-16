@@ -9,6 +9,7 @@ public class PlayerCamera : MonoBehaviour
     public float cameraSpeed; // (0,inf)
     public float cameraOffsetUp, cameraOffsetDown, cameraOffsetRight, cameraOffsetLeft;
 
+    public Vector2 standardCameraOffset;
     public Vector2 currentCameraPosition { get; private set; } //local position
     public Vector2 targetCameraPosition { get; private set; } //local position
 
@@ -44,7 +45,7 @@ public class PlayerCamera : MonoBehaviour
     void UpdateTargetCameraPosition()
     {
         //updates targetCameraPosition based on movement
-        Vector2 newTargetPosition = Vector2.zero;
+        Vector2 newTargetPosition = standardCameraOffset;
 
         //horizontal
         if ((playerController.holding || playerController.slipping) == false)
@@ -74,18 +75,20 @@ public class PlayerCamera : MonoBehaviour
             }
         }
         //vertical
-        if ((GameInputManager.GetManagerKey("Up") && GameInputManager.GetManagerKey("Down")) == false)
+        if ((playerController.up.hold && playerController.down.hold) == false)
         {
             //does not change if up and down are pressed together
-            if (GameInputManager.GetManagerKey("Up"))
+            if (playerController.up.hold)
             {
                 newTargetPosition += Vector2.up * cameraOffsetUp;
             }
-            if (GameInputManager.GetManagerKey("Down"))
+            if (playerController.down.hold)
             {
                 newTargetPosition += Vector2.down * cameraOffsetDown;
             }
         }
+        //set calculated target position
+        targetCameraPosition = newTargetPosition;
     }
     
 }
