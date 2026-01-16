@@ -299,7 +299,7 @@ public class PlayerController : MonoBehaviour
 
         //checkBotFree
         float targetHeight = (origin + Vector2.up * currentHeight).y - playerObject.transform.localScale.y / 2;
-        Vector2 targetPosition = playerObject.transform.position = new Vector2(playerObject.transform.position.x, targetHeight);
+        Vector2 targetPosition = new Vector2(playerObject.transform.position.x, targetHeight);
         bool downCheck = Physics2D.Raycast(
             targetPosition,
             Vector2.down,
@@ -342,7 +342,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (canWallJump)
         {
-            StartCoroutine(Hold(playerObject, playerObject.transform.position, playerMovementDirection, 1));
+            StartCoroutine(Hold(playerObject, playerObject.transform.position, playerMovementDirection, wallJumpSlipTime));
         }
     }
     bool IsGrounded(Vector2 velocity)
