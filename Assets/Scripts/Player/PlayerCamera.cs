@@ -76,14 +76,14 @@ public class PlayerCamera : MonoBehaviour
         }
 
         //vertical
-        if ((playerController.up.hold && playerController.down.hold) == false)
+        if ((Manager.m.playerManager.up.hold && Manager.m.playerManager.down.hold) == false)
         {
             //does not change if up and down are pressed together
-            if (playerController.up.hold)
+            if (Manager.m.playerManager.up.hold)
             {
                 newTargetPosition += Vector2.up * cameraOffsetUp * 0.5f;
             }
-            if (playerController.down.hold)
+            if (Manager.m.playerManager.down.hold)
             {
                 newTargetPosition += Vector2.down * cameraOffsetDown * 0.5f;
             }

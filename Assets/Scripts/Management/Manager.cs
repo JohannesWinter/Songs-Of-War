@@ -16,7 +16,14 @@ public sealed class Manager : MonoBehaviour
     public string[] standardKeyTrigger;
     public Dictionary<string, string> keyActionTriggers = new Dictionary<string, string>();
 
+    //Data
     public string version;
+
+    //GameManagers
+    public AbilityManager abilityManager;
+    public PlayerManager playerManager;
+    
+
 
     void Awake()
     {
@@ -80,12 +87,12 @@ public sealed class Manager : MonoBehaviour
                     "ArrowRight",//2
                     "ArrowUp",//3
                     "ArrowDown",//4
-                    "W",//5
-                    "S",//6
-                    "Q",//7
-                    "A",//8
-                    "E",//9
-                    "D",//10
+                    "S",//5
+                    "D",//6
+                    "A",//7
+                    "Q",//8
+                    "W",//9
+                    "E",//10
                     "",//11
                     "",//12
                     "ClickRight",//13
