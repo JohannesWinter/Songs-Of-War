@@ -94,3 +94,38 @@ public struct InputState
     public bool press;
     public bool release;
 }
+public enum PlayerMovementDirection
+{
+    None,
+    Right,
+    Left,
+}
+public enum PlayerRequestType
+{
+    AddVelocity,
+    SetVelocity,
+    SetPosition,
+    AddPosition,
+    LockMovement,
+    UnlockMovement,
+    LockGravity,
+    UnlockGravity,
+    LockVelocity,
+    UnlockVelocity,
+    OverrideGravity,
+    CancelHold,
+}
+public struct PlayerRequest
+{
+    public PlayerRequestType type;
+    public int priority; // 0 - irrelevent, 1 - low, 2 - normal, 3 - high, 4 - critical
+    public Vector2 vector;
+    public float duration;
+    public float[] values;
+}
+
+public class PlayerRequestTimer
+{
+    public float remaining;
+    public int priority;
+}

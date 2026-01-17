@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.Rendering.DebugUI;
@@ -21,6 +22,14 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayer;
     float enabledGroundBuffer = 0f;
     float disabledGroundBuffer = 0f;
+
+    List<PlayerRequest> requests = new List<PlayerRequest>();
+    bool movementLocked;
+    List<PlayerRequestTimer> movementLockTimers = new List<PlayerRequestTimer>();
+    bool gravityLocked;
+    List<PlayerRequestTimer> gravityLockTimers = new List<PlayerRequestTimer>();
+    bool velocityLocked;
+    List<PlayerRequestTimer> velocityLockTimers = new List<PlayerRequestTimer>();
 
     public float gravity;
     public float maxFallSpeed;
@@ -55,10 +64,10 @@ public class PlayerController : MonoBehaviour
         CheckInputs();
         UpdateDebugVisuals();
     }
-
-    public void resetVelocity()
+    public void AddRequest(PlayerRequest request)
     {
-        velocity = Vector2.zero;
+        //receive movement requests from outside
+        requests.Add(request);
     }
 
     void CheckInputs()
@@ -109,15 +118,144 @@ public class PlayerController : MonoBehaviour
     }
     void FixedUpdate()
     {
+        ProcessRequests();
         CheckParameterAccessibility();
         TryStepUp(velocity);
         TryHold(velocity);
         velocity = CheckMovement(velocity);
         velocity = CheckGravity(velocity);
         if (holding) velocity = Vector2.zero;
+        if (velocityLocked) velocity = Vector2.zero;
         rb.velocity = velocity;
         EndParameterAccessibilty();
     }
+    void ProcessRequests()
+    {
+        //sort requests by priority
+        requests.Sort((a, b) => a.priority.CompareTo(b.priority));
+
+        //process outside requests in fixed update
+        while (requests.Count > 0)
+        {
+            var r = requests[0];
+            requests.RemoveAt(0);
+            PlayerRequestTimer pRT = new PlayerRequestTimer();
+
+            switch (r.type)
+            {
+                case PlayerRequestType.AddVelocity:
+                    velocity += r.vector;
+                    break;
+
+                case PlayerRequestType.SetVelocity:
+                    velocity = r.vector;
+                    break;
+
+                case PlayerRequestType.SetPosition:
+                    rb.position = r.vector;
+                    break;
+
+                case PlayerRequestType.AddPosition:
+                    rb.position += r.vector;
+                    break;
+
+                case PlayerRequestType.LockMovement:
+                    pRT.remaining = r.duration;
+                    pRT.priority = r.priority;
+                    movementLockTimers.Add(pRT);
+                    break;
+
+                case PlayerRequestType.UnlockMovement:
+                    for (int i = movementLockTimers.Count - 1; i >= 0; i--)
+                    {
+                        if (movementLockTimers[i].priority <= r.priority)
+                        {
+                            movementLockTimers.RemoveAt(i);
+                        }
+                    }
+                    break;
+
+                case PlayerRequestType.LockGravity:
+                    pRT.remaining = r.duration;
+                    pRT.priority = r.priority;
+                    gravityLockTimers.Add(pRT);
+                    break;
+
+                case PlayerRequestType.UnlockGravity:
+                    for (int i = gravityLockTimers.Count - 1; i >= 0; i--)
+                    {
+                        if (gravityLockTimers[i].priority <= r.priority)
+                        {
+                            gravityLockTimers.RemoveAt(i);
+                        }
+                    }
+                    break;
+
+                case PlayerRequestType.LockVelocity:
+                    pRT.remaining = r.duration;
+                    pRT.priority = r.priority;
+                    velocityLockTimers.Add(pRT);
+                    break;
+
+                case PlayerRequestType.UnlockVelocity:
+                    for (int i = velocityLockTimers.Count - 1; i >= 0; i--)
+                    {
+                        if (velocityLockTimers[i].priority <= r.priority)
+                        {
+                            velocityLockTimers.RemoveAt(i);
+                        }
+                    }
+                    break;
+
+                case PlayerRequestType.CancelHold:
+                    holding = false;
+                    slipping = false;
+                    break;
+
+                case PlayerRequestType.OverrideGravity:
+                    gravity = r.values[0];
+                    break;
+            }
+        }
+        UpdatePriorities();
+    }
+
+    void UpdatePriorities()
+    {
+        for (int i = movementLockTimers.Count - 1; i >= 0; i--)
+        {
+            movementLockTimers[i].remaining -= Time.fixedDeltaTime;
+            if (movementLockTimers[i].remaining <= 0)
+            {
+                movementLockTimers.RemoveAt(i);
+            }
+        }
+        if (movementLockTimers.Count <= 0) movementLocked = false;
+        else movementLocked = true;
+
+        for (int i = gravityLockTimers.Count - 1; i >= 0; i--)
+        {
+            gravityLockTimers[i].remaining -= Time.fixedDeltaTime;
+            if (gravityLockTimers[i].remaining <= 0)
+            {
+                gravityLockTimers.RemoveAt(i);
+            }
+        }
+        if (gravityLockTimers.Count <= 0) gravityLocked = false;
+        else gravityLocked = true;
+
+        for (int i = velocityLockTimers.Count - 1; i >= 0; i--)
+        {
+            velocityLockTimers[i].remaining -= Time.fixedDeltaTime;
+            if (velocityLockTimers[i].remaining <= 0)
+            {
+                velocityLockTimers.RemoveAt(i);
+            }
+        }
+        if (velocityLockTimers.Count <= 0) velocityLocked = false;
+        else velocityLocked = true;
+    }
+
     void CheckParameterAccessibility()
     {
         //resets on-ground parameters
@@ -163,6 +301,9 @@ public class PlayerController : MonoBehaviour
 
     Vector2 CheckMovement(Vector2 velocity)
     {
+        //checks if movement is enabled
+        if (movementLocked) return velocity;
+
         //checks jump movement
         if (pressedJumpFixedUpdate && (IsGrounded(velocity) || holding || slipping))
         {
@@ -216,6 +357,9 @@ public class PlayerController : MonoBehaviour
 
     Vector2 CheckGravity(Vector2 velocity)
     {
+        //check if gravity is enabled
+        if (gravityLocked) return velocity;
+
         velocity.y += -1 * gravity * Time.fixedDeltaTime;
         if (velocity.y < -maxFallSpeed)
         {
@@ -225,6 +369,9 @@ public class PlayerController : MonoBehaviour
     }
     void TryStepUp(Vector2 currentVelocity)
     {
+        //check if stepup (movement) is enabled
+        if (movementLocked) return;
+
         //check stepup logic
         if (IsGrounded(currentVelocity) == false) { return; }
 
@@ -287,6 +434,9 @@ public class PlayerController : MonoBehaviour
     }
     void TryHold(Vector2 currentVelocity)
     {
+        //check if hold (movement) is enabled
+        if (movementLocked) return;
+
         //check hold logic
         if (IsGrounded(currentVelocity) == true || disabledGroundBuffer > 0 || canHoldOnWall == false || slipping == true || holding == true) return;
 
@@ -586,11 +736,4 @@ public class PlayerController : MonoBehaviour
         holding = false;
         slipping = false;
     }
-}
-
-public enum PlayerMovementDirection
-{
-    None,
-    Right,
-    Left,
 }

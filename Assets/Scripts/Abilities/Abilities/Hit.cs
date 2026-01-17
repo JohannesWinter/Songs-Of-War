@@ -41,6 +41,17 @@ public class Hit : Ability
     override public void InitIndiv()
     {
         this.remainingDuration = duration;
+        PlayerRequest rq = new PlayerRequest();
+        rq.type = PlayerRequestType.LockVelocity;
+        rq.duration = remainingDuration;
+        abilityContext.playerController.AddRequest(rq);
+
+        PlayerRequest rq2 = new PlayerRequest();
+        rq2.type = PlayerRequestType.CancelHold;
+        abilityContext.playerController.AddRequest(rq2);
+
+
+        this.gameObject.transform.position = abilityContext.originObject.transform.position;
         switch (abilityContext.direction)
         {
             case AbilityDirection.North:
