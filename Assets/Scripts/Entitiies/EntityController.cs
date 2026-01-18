@@ -5,10 +5,10 @@ using UnityEngine.UI;
 
 public class EntityController : MonoBehaviour
 {
-    public GameObject playerObject;
-    public Transform playerRoot;
-    public Transform playerTop;
-    public BoxCollider2D playerCollider;
+    public GameObject entityObject;
+    public Transform entityRoot;
+    public Transform entityTop;
+    public BoxCollider2D entityCollider;
     public Rigidbody2D rb;
     public Vector2 velocity;
     Vector2 positionLastFrame;
@@ -27,15 +27,7 @@ public class EntityController : MonoBehaviour
 
     public float gravity;
     public float maxFallSpeed;
-    public float jumpPower;
-    public float horizontalMaxSpeed;
-    public float horizontalAcceleration;
-    public float groundBufferDuration;
     public float stepHeight;
-    public float wallJumpSlipTime;
-    public float wallJumpBufferDuration;
-    public float playerMinGripHeight;
-    public bool canWallJump;
 
     public EntityMovementDirection entityMovementDirection;
     EntityMovementDirection lastEntityMovementDirection;
@@ -229,11 +221,11 @@ public class EntityController : MonoBehaviour
         {
             lastEntityMovementDirection = entityMovementDirection;
         }
-        positionLastFrame = playerObject.transform.position;
+        positionLastFrame = entityObject.transform.position;
         lastSimpleEntityMovementDirection = GetSimpleEntityMovementDirection(entityMovementDirection, lastSimpleEntityMovementDirection);
     }
 
-    SimpleEntityMovementDirection GetSimpleEntityMovementDirection(EntityMovementDirection entityMovementDirection, SimpleEntityMovementDirection lastSimpleEntityMovementDirection)
+    protected SimpleEntityMovementDirection GetSimpleEntityMovementDirection(EntityMovementDirection entityMovementDirection, SimpleEntityMovementDirection lastSimpleEntityMovementDirection)
     {
         //returns new Value (East/West) as current facing direction
         if (entityMovementDirection == EntityMovementDirection.None ||
@@ -261,38 +253,38 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    bool IsGrounded()
+    protected bool IsGrounded()
     {
         RaycastHit2D downCheck = Physics2D.Raycast(
-            (Vector2)playerObject.transform.position,
+            (Vector2)entityObject.transform.position,
             Vector2.down,
-            playerObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + 0.05f,
             groundLayer
         );
         RaycastHit2D downCheckRight = Physics2D.Raycast(
-            (Vector2)playerObject.transform.position + Vector2.right * playerObject.transform.localScale.x / 2 * 0.95f,
+            (Vector2)entityObject.transform.position + Vector2.right * entityObject.transform.localScale.x / 2 * 0.95f,
             Vector2.down,
-            playerObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + 0.05f,
             groundLayer
         );
         RaycastHit2D downCheckLeft = Physics2D.Raycast(
-            (Vector2)playerObject.transform.position + Vector2.left * playerObject.transform.localScale.x / 2 * 0.95f,
+            (Vector2)entityObject.transform.position + Vector2.left * entityObject.transform.localScale.x / 2 * 0.95f,
             Vector2.down,
-            playerObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + 0.05f,
             groundLayer
         );
 
         bool grounded = (downCheck || downCheckLeft || downCheckRight);
         return grounded;
     }
-     bool IsTopFree(Vector2 targetPosition)
+    protected bool IsTopFree(Vector2 targetPosition)
     {
         for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
-                targetPosition + Vector2.right * (-playerObject.transform.localScale.x / 2 + (playerObject.transform.localScale.x * i / 10)),
+                targetPosition + Vector2.right * (-entityObject.transform.localScale.x / 2 + (entityObject.transform.localScale.x * i / 10)),
                 Vector2.up,
-                playerObject.transform.localScale.y / 2 + 0.1f,
+                entityObject.transform.localScale.y / 2 + 0.1f,
                 groundLayer
                 );
             if (topHit == true)
@@ -302,14 +294,14 @@ public class EntityController : MonoBehaviour
         }
         return true;
     }
-    bool IsBotFree(Vector2 targetPosition)
+    protected bool IsBotFree(Vector2 targetPosition)
     {
         for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
-                targetPosition + Vector2.right * (-playerObject.transform.localScale.x / 2 + (playerObject.transform.localScale.x * i / 10)),
+                targetPosition + Vector2.right * (-entityObject.transform.localScale.x / 2 + (entityObject.transform.localScale.x * i / 10)),
                 Vector2.down,
-                playerObject.transform.localScale.y / 2 + 0.05f,
+                entityObject.transform.localScale.y / 2 + 0.05f,
                 groundLayer
                 );
             if (topHit == true)
@@ -320,16 +312,16 @@ public class EntityController : MonoBehaviour
         return true;
     }
 
-    bool IsTouchingWall(EntityMovementDirection eMD, SimpleEntityMovementDirection lastSimpleEMD)
+    protected bool IsTouchingWall(EntityMovementDirection eMD, SimpleEntityMovementDirection lastSimpleEMD)
     {
         if (GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
 
         for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
-                (Vector2)playerObject.transform.position + Vector2.up * (-playerObject.transform.localScale.y / 2 + (playerObject.transform.localScale.y * i / 10)),
+                (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + (entityObject.transform.localScale.y * i / 10)),
                 GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
-                playerObject.transform.localScale.x / 2 + 0.1f,
+                entityObject.transform.localScale.x / 2 + 0.1f,
                 groundLayer
                 );
             if (topHit == true)
@@ -338,6 +330,30 @@ public class EntityController : MonoBehaviour
             }
         }
         return false;
+    }
+    protected float IsAtLedge(SimpleEntityMovementDirection sEMD, float maxLedgeCheckDepth = 10f)
+    {
+        if (sEMD == SimpleEntityMovementDirection.None)
+            return 0f;
+
+        float halfWidth = entityObject.transform.localScale.x * 0.5f;
+        float direction = sEMD == SimpleEntityMovementDirection.East ? 1f : -1f;
+
+        Vector2 origin = (Vector2)entityRoot.position + Vector2.right * halfWidth * direction;
+
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, maxLedgeCheckDepth, groundLayer);
+
+        if (hit.collider == null)
+        {
+            return -1f;
+        }
+
+        float groundDistance = hit.distance;
+
+        if (groundDistance <= 0.05f)
+            return 0f;
+
+        return groundDistance;
     }
 
     public static Vector2 GetEntityMovementDirectionVector(EntityMovementDirection eMD)

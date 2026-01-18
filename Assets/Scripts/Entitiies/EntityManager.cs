@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EntityManager : MonoBehaviour
 {
-    public EntityController entityController;
+    public List<EntityController> entityControllers;
     void Start()
     {
         
