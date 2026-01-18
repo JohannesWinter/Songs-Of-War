@@ -6,15 +6,7 @@ using static UnityEngine.UI.Image;
 public class AbilityManager : MonoBehaviour
 {
     public GameObject[] abilityObjects;
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-        
-    }
+    public AbilityContext abilityContext;
 
     public (GameObject, Ability) RunAbility(AbilityContext ctx)
     {
@@ -50,15 +42,15 @@ public enum AbilityType
     Red,
     Yellow,
     Blue,
-    Green
+    Green,
 }
 public enum AbilityOrigin
 {
+    None,
     Player,
-    Mob,
-    Enviroment
+    Entity,
+    Enviroment,
 }
-
 public enum AbilityDirection
 {
     None,
@@ -70,4 +62,11 @@ public enum AbilityDirection
     SouthWest,
     West,
     NorthWest,
+}
+public enum HitboxHolder
+{
+    Player,
+    Entity,
+    Enviroment,
+    Ability,
 }

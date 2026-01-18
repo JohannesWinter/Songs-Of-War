@@ -18,15 +18,24 @@ public class Hit : Ability
     float remainingDuration;
     void Awake()
     {
-        nCol.SetActive(false);
-        neCol.SetActive(false);
-        eCol.SetActive(false);
-        seCol.SetActive(false);
-        sCol.SetActive(false);
-        swCol.SetActive(false);
-        wCol.SetActive(false);
-        nwCol.SetActive(false);
-    }
+        nCol.GetComponent<Collider2D>().enabled = false;
+        neCol.GetComponent<Collider2D>().enabled = false;
+        eCol.GetComponent<Collider2D>().enabled = false;
+        seCol.GetComponent<Collider2D>().enabled = false;
+        sCol.GetComponent<Collider2D>().enabled = false;
+        swCol.GetComponent<Collider2D>().enabled = false;
+        wCol.GetComponent<Collider2D>().enabled = false;
+        nwCol.GetComponent<Collider2D>().enabled = false;
+
+        nCol.GetComponent<SpriteRenderer>().enabled = false;
+        neCol.GetComponent<SpriteRenderer>().enabled = false;
+        eCol.GetComponent<SpriteRenderer>().enabled = false;
+        seCol.GetComponent<SpriteRenderer>().enabled = false;
+        sCol.GetComponent<SpriteRenderer>().enabled = false;
+        swCol.GetComponent<SpriteRenderer>().enabled = false;
+        wCol.GetComponent<SpriteRenderer>().enabled = false;
+        nwCol.GetComponent<SpriteRenderer>().enabled = false;
+    }   
     void Update()
     {
         remainingDuration -= Time.deltaTime;
@@ -44,6 +53,7 @@ public class Hit : Ability
         PlayerRequest rq = new PlayerRequest();
         rq.type = PlayerRequestType.LockVelocity;
         rq.duration = remainingDuration;
+        rq.priority = 1;
         abilityContext.playerController.AddRequest(rq);
 
         PlayerRequest rq2 = new PlayerRequest();
@@ -55,29 +65,67 @@ public class Hit : Ability
         switch (abilityContext.direction)
         {
             case AbilityDirection.North:
-                nCol.SetActive(true);
+                nCol.GetComponent<Collider2D>().enabled = true;
+                nCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.NorthEast:
-                neCol.SetActive(true);
+                neCol.GetComponent<Collider2D>().enabled = true;
+                neCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.East:
-                eCol.SetActive(true);
+                eCol.GetComponent<Collider2D>().enabled = true;
+                eCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.SouthEast:
-                seCol.SetActive(true);
+                seCol.GetComponent<Collider2D>().enabled = true;
+                seCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.South:
-                sCol.SetActive(true);
+                sCol.GetComponent<Collider2D>().enabled = true;
+                sCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.SouthWest:
-                swCol.SetActive(true);
+                swCol.GetComponent<Collider2D>().enabled = true;
+                swCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.West:
-                wCol.SetActive(true);
+                wCol.GetComponent<Collider2D>().enabled = true;
+                wCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
             case AbilityDirection.NorthWest:
-                nwCol.SetActive(true);
+                nwCol.GetComponent<Collider2D>().enabled = true;
+                nwCol.GetComponent<SpriteRenderer>().enabled = true;
                 break;
+        }
+    }
+
+    override public void HandleHit(Collider2D Collider2D)
+    {
+        HitboxContext hBC = Collider2D.GetComponent<HitboxContext>();
+        if (hBC == null) return;
+        if (abilityContext.direction == AbilityDirection.South ||
+        abilityContext.direction == AbilityDirection.SouthEast ||
+        abilityContext.direction == AbilityDirection.SouthWest)
+        {
+            switch (hBC.hitboxHolder)
+            {
+                case HitboxHolder.Entity:
+                        PlayerRequest rq = new PlayerRequest();
+                        rq.type = PlayerRequestType.UnlockVelocity;
+                        rq.priority = 2;
+                        abilityContext.playerController.AddRequest(rq);
+
+                        PlayerRequest rq2 = new PlayerRequest();
+                        rq2.type = PlayerRequestType.SetVelocity;
+                        rq2.vector = Vector2.up * 15;
+                        rq2.priority = 3;
+                        abilityContext.playerController.AddRequest(rq2);
+
+                        PlayerRequest rq3 = new PlayerRequest();
+                        rq3.type = PlayerRequestType.DisableJumpInterrupt;
+                        abilityContext.playerController.AddRequest(rq3);
+                break;
+            }
         }
     }
 }

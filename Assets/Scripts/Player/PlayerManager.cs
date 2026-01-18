@@ -114,6 +114,7 @@ public enum PlayerRequestType
     UnlockVelocity,
     OverrideGravity,
     CancelHold,
+    DisableJumpInterrupt,
 }
 public struct PlayerRequest
 {

@@ -202,7 +202,7 @@ public class PlayerController : MonoBehaviour
                     {
                         if (velocityLockTimers[i].priority <= r.priority)
                         {
-                            velocityLockTimers.RemoveAt(i);
+                            velocityLockTimers[i].remaining = 0;
                         }
                     }
                     break;
@@ -214,6 +214,10 @@ public class PlayerController : MonoBehaviour
 
                 case PlayerRequestType.OverrideGravity:
                     gravity = r.values[0];
+                    break;
+
+                case PlayerRequestType.DisableJumpInterrupt:
+                    canInterruptJump = false;
                     break;
             }
         }
@@ -265,7 +269,7 @@ public class PlayerController : MonoBehaviour
             canHoldOnWall = true;
             holding = false;
             slipping = false;
-            velocity.y = -5;
+            if (velocity.y < -5) velocity.y = -5;
         }
         //sets walljump/hold/slip parameters
         if (canHoldOnWall == false && holding == false && slipping == false)

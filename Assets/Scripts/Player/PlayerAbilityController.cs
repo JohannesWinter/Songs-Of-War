@@ -60,7 +60,7 @@ public class PlayerAbilityController : MonoBehaviour
             else if (left) direction = AbilityDirection.West;
             else direction = lastDirection;
 
-            AbilityContext ctx = new AbilityContext();
+            AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
             ctx.abilityDef = AbilityDef.Hit;
             ctx.direction = direction;
             ctx.origin = AbilityOrigin.Player;
