@@ -8,7 +8,8 @@ public class EntityController : MonoBehaviour
     public GameObject entityObject;
     public Transform entityRoot;
     public Transform entityTop;
-    public BoxCollider2D entityCollider;
+    public Collider2D entityCollider;
+    public Collider2D entityHitbox;
     public Rigidbody2D rb;
     public Vector2 velocity;
     Vector2 positionLastFrame;
@@ -34,6 +35,10 @@ public class EntityController : MonoBehaviour
     SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
 
     public int health;
+    public bool dead;
+    public float bodyTimer;
+    float remainingBodyTimer;
+    public float friction;
     void Start()
     {
         rb.gravityScale = 0;
@@ -42,7 +47,7 @@ public class EntityController : MonoBehaviour
     // Update is called once per frame
     protected virtual void FixedUpdate()
     {
-        if (CheckDeath()) return;
+        CheckDeath();
         ProcessRequests();
         CheckParameterAccessibility();
         velocity = CheckGravity(velocity);
@@ -205,6 +210,12 @@ public class EntityController : MonoBehaviour
         if (angle < 292.5f) return EntityMovementDirection.South;
         return EntityMovementDirection.SouthEast;
     }
+    protected Vector2 CheckFriction(Vector2 velocity)
+    {
+        velocity.x *= Mathf.Pow(1 - friction, Time.fixedDeltaTime);
+        return velocity;
+    }
+
 
     Vector2 CheckGravity(Vector2 velocity)
     {
@@ -389,12 +400,22 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    bool CheckDeath()
+    protected bool CheckDeath()
     {
-        if (health <= 0)
+        if (health < 0 && dead == false)
         {
-            Destroy(entityObject);
+            dead = true;
+            remainingBodyTimer = bodyTimer;
             return true;
+        }
+        if (health < 0)
+        {
+            remainingBodyTimer -= Time.fixedDeltaTime;
+            if (remainingBodyTimer <= 0)
+            {
+                Destroy(this.gameObject);
+            }
+            entityHitbox.enabled = false;
         }
         return false;
     }

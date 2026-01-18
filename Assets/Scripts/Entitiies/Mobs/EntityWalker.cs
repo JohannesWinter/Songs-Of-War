@@ -22,6 +22,13 @@ public class EntityWalker : EntityController
 
     protected override void FixedUpdate()
     {
+        if (dead == false) BaseMovement();
+        else velocity = CheckFriction(velocity);
+        base.FixedUpdate();
+    }
+
+    void BaseMovement()
+    {
         if (currentMovementDirection == SimpleEntityMovementDirection.East)
         {
             if (velocity.x < maxSpeed)
@@ -53,9 +60,7 @@ public class EntityWalker : EntityController
                 currentMovementDirection = SimpleEntityMovementDirection.East;
             }
         }
-        base.FixedUpdate();
     }
-
     private void OnHitboxHit(HitboxTrigger other)
     {
         var ctx = other.hitboxContext;
@@ -63,14 +68,15 @@ public class EntityWalker : EntityController
         {
             return;
         }
+        health -= ctx.damage;
         Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position).normalized;
         Vector2 oppositePosition = relativePosition * -1; 
         Vector2 knockBack = oppositePosition * gottenKnockback;
-        health -= ctx.damage;
         if (IsGrounded())
         {
             knockBack.y = gottenKnockback;
         }
+        if (health < 0) knockBack *= 2;
         velocity = knockBack;
     }
 }
