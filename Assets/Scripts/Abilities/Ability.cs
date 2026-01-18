@@ -14,6 +14,7 @@ public abstract class Ability : MonoBehaviour
         hitboxContext = this.gameObject.AddComponent<HitboxContext>();
         hitboxContext.hitboxHolder = HitboxHolder.Ability;
         hitboxContext.abilityOrigin = ctx.origin;
+        hitboxContext.originObject = ctx.originObject;
 
         this.transform.parent = Manager.m.abilityManager.abilityFolder.transform;
         ctx.gameObject.transform.parent = this.gameObject.transform;
@@ -30,8 +31,8 @@ public abstract class Ability : MonoBehaviour
         HitboxTrigger[] hitboxes = gameObject.GetComponentsInChildren<HitboxTrigger>();
         for (int i = 0; i < hitboxes.Length; i++)
         {
-            hitboxes[i].parentHitboxContext = this.hitboxContext;
-            hitboxes[i].OnHit += HandleHit;
+            hitboxes[i].hitboxContext = this.hitboxContext;
+            hitboxes[i].onHit += HandleHit;
         }
 
         InitIndiv();

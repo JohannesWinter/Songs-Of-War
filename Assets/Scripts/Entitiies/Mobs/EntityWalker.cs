@@ -4,21 +4,68 @@ using UnityEngine;
 
 public class EntityWalker : EntityController
 {
-    SimpleEntityMovementDirection movementDirection = SimpleEntityMovementDirection.East;
-
-    void FixedUpdate()
+    public float acceleration;
+    public float maxSpeed;
+    public float walkwayEndReactionSpeed;
+    public float gottenKnockback;
+    public SimpleEntityMovementDirection currentMovementDirection = SimpleEntityMovementDirection.East;
+    public HitboxTrigger hitboxTrigger;
+    public void Start()
     {
-        if (movementDirection == SimpleEntityMovementDirection.East)
+        hitboxTrigger.onHit += OnHitboxHit;
+    }
+
+
+    protected override void FixedUpdate()
+    {
+        if (currentMovementDirection == SimpleEntityMovementDirection.East)
         {
-            if (velocity.x <= 10)
+            if (velocity.x < maxSpeed)
             {
-                velocity.x += 1 * Time.deltaTime;
+                velocity.x += 1 * Time.fixedDeltaTime * acceleration;
             }
-            else if (velocity.x > 10.1f)
+            else if (velocity.x > maxSpeed + 0.1f)
             {
-                velocity.x =- 1 * Time.deltaTime;
+                velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
             }
-            if ()
+            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+            {
+                currentMovementDirection = SimpleEntityMovementDirection.West;
+            }
+
         }
+        if (currentMovementDirection == SimpleEntityMovementDirection.West)
+        {
+            if (velocity.x > -maxSpeed)
+            {
+                velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
+            }
+            else if (velocity.x < -maxSpeed - 0.1f)
+            {
+                velocity.x += 1 * Time.fixedDeltaTime * acceleration;
+            }
+            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+            {
+                currentMovementDirection = SimpleEntityMovementDirection.East;
+            }
+        }
+        base.FixedUpdate();
+    }
+
+    private void OnHitboxHit(HitboxTrigger other)
+    {
+        var ctx = other.hitboxContext;
+        if (ctx.hitboxHolder == HitboxHolder.Entity)
+        {
+            return;
+        }
+        Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position).normalized;
+        Vector2 oppositePosition = relativePosition * -1; 
+        Vector2 knockBack = oppositePosition * gottenKnockback;
+        if (IsGrounded())
+        {
+            knockBack.y = gottenKnockback;
+        }
+        velocity = knockBack;
     }
 }

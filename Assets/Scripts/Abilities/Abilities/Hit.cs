@@ -106,7 +106,7 @@ public class Hit : Ability
 
     override public void HandleHit(HitboxTrigger other)
     {
-        HitboxContext hBC = other.parentHitboxContext;
+        HitboxContext hBC = other.hitboxContext;
         if (hBC == null) return;
         if (abilityContext.direction == AbilityDirection.South ||
         abilityContext.direction == AbilityDirection.SouthEast ||

@@ -18,11 +18,11 @@ public class EntityController : MonoBehaviour
     public LayerMask groundLayer;
 
     List<EntityRequest> requests = new List<EntityRequest>();
-    bool movementLocked;
+    public bool movementLocked { get; private set; }
     List<PlayerRequestTimer> movementLockTimers = new List<PlayerRequestTimer>();
-    bool gravityLocked;
+    public bool gravityLocked { get; private set; }
     List<PlayerRequestTimer> gravityLockTimers = new List<PlayerRequestTimer>();
-    bool velocityLocked;
+    public bool velocityLocked { get; private set; }
     List<PlayerRequestTimer> velocityLockTimers = new List<PlayerRequestTimer>();
 
     public float gravity;
@@ -34,11 +34,11 @@ public class EntityController : MonoBehaviour
     SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
     void Start()
     {
-        
+        rb.gravityScale = 0;
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         ProcessRequests();
         CheckParameterAccessibility();
@@ -178,6 +178,11 @@ public class EntityController : MonoBehaviour
 
     void CheckParameterAccessibility()
     {
+        //resets on-ground parameters
+        if (IsGrounded())
+        {
+            if (velocity.y < -5) velocity.y = -5;
+        }
         entityMovementDirection = GetDirectionFromVelocity(velocity);
     }
     public static EntityMovementDirection GetDirectionFromVelocity(Vector2 velocity, float deadZone = 0.01f)
@@ -253,24 +258,24 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    protected bool IsGrounded()
+    protected bool IsGrounded(float distance = 0.05f)
     {
         RaycastHit2D downCheck = Physics2D.Raycast(
             (Vector2)entityObject.transform.position,
             Vector2.down,
-            entityObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + distance,
             groundLayer
         );
         RaycastHit2D downCheckRight = Physics2D.Raycast(
             (Vector2)entityObject.transform.position + Vector2.right * entityObject.transform.localScale.x / 2 * 0.95f,
             Vector2.down,
-            entityObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + distance,
             groundLayer
         );
         RaycastHit2D downCheckLeft = Physics2D.Raycast(
             (Vector2)entityObject.transform.position + Vector2.left * entityObject.transform.localScale.x / 2 * 0.95f,
             Vector2.down,
-            entityObject.transform.localScale.y / 2 + 0.05f,
+            entityObject.transform.localScale.y / 2 + distance,
             groundLayer
         );
 
@@ -312,7 +317,7 @@ public class EntityController : MonoBehaviour
         return true;
     }
 
-    protected bool IsTouchingWall(EntityMovementDirection eMD, SimpleEntityMovementDirection lastSimpleEMD)
+    protected bool IsTouchingWall(SimpleEntityMovementDirection lastSimpleEMD, EntityMovementDirection eMD = EntityMovementDirection.None, float maxDistance = 0.1f)
     {
         if (GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
 
@@ -321,7 +326,7 @@ public class EntityController : MonoBehaviour
             bool topHit = Physics2D.Raycast(
                 (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + (entityObject.transform.localScale.y * i / 10)),
                 GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
-                entityObject.transform.localScale.x / 2 + 0.1f,
+                entityObject.transform.localScale.x / 2 + maxDistance,
                 groundLayer
                 );
             if (topHit == true)
@@ -331,7 +336,7 @@ public class EntityController : MonoBehaviour
         }
         return false;
     }
-    protected float IsAtLedge(SimpleEntityMovementDirection sEMD, float maxLedgeCheckDepth = 10f)
+    protected float IsAtLedge(SimpleEntityMovementDirection sEMD, float maxLedgeCheckDepth = 10f, float minLedgeDepth = 0.05f, float distance = 0f)
     {
         if (sEMD == SimpleEntityMovementDirection.None)
             return 0f;
@@ -339,18 +344,18 @@ public class EntityController : MonoBehaviour
         float halfWidth = entityObject.transform.localScale.x * 0.5f;
         float direction = sEMD == SimpleEntityMovementDirection.East ? 1f : -1f;
 
-        Vector2 origin = (Vector2)entityRoot.position + Vector2.right * halfWidth * direction;
+        Vector2 origin = (Vector2)entityRoot.position + Vector2.right * (halfWidth + distance) * direction;
 
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, maxLedgeCheckDepth, groundLayer);
 
         if (hit.collider == null)
         {
-            return -1f;
+            return float.MaxValue;
         }
 
         float groundDistance = hit.distance;
 
-        if (groundDistance <= 0.05f)
+        if (groundDistance <= minLedgeDepth)
             return 0f;
 
         return groundDistance;

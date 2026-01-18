@@ -6,4 +6,5 @@ public class HitboxContext : MonoBehaviour
 {
     public HitboxHolder hitboxHolder;
     public AbilityOrigin abilityOrigin;
+    public GameObject originObject;
 }
