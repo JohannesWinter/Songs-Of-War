@@ -11,7 +11,7 @@ public class EntityWalker : EntityController
     public SimpleEntityMovementDirection currentMovementDirection = SimpleEntityMovementDirection.East;
     public HitboxTrigger hitboxTrigger;
     public float knockBack;
-    public float damage;
+    public int damage;
     public void Start()
     {
         hitboxTrigger.onHit += OnHitboxHit;
@@ -66,6 +66,7 @@ public class EntityWalker : EntityController
         Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position).normalized;
         Vector2 oppositePosition = relativePosition * -1; 
         Vector2 knockBack = oppositePosition * gottenKnockback;
+        health -= ctx.damage;
         if (IsGrounded())
         {
             knockBack.y = gottenKnockback;

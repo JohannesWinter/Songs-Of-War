@@ -10,4 +10,5 @@ public class AbilityContext : MonoBehaviour
     public AbilityDirection direction;
     public PlayerController playerController;
     public Ability ability;
+    public int damage;
 }

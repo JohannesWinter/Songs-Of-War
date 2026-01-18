@@ -15,6 +15,7 @@ public abstract class Ability : MonoBehaviour
         hitboxContext.hitboxHolder = HitboxHolder.Ability;
         hitboxContext.abilityOrigin = ctx.origin;
         hitboxContext.originObject = ctx.originObject;
+        hitboxContext.damage = ctx.damage;
 
         this.transform.parent = Manager.m.abilityManager.abilityFolder.transform;
         ctx.gameObject.transform.parent = this.gameObject.transform;

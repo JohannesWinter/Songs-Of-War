@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     float enabledGroundBuffer = 0f;
     float disabledGroundBuffer = 0f;
 
-    List<PlayerRequest> requests = new List<PlayerRequest>();
+    List<PlayerMovementRequest> requests = new List<PlayerMovementRequest>();
     bool movementLocked;
     List<PlayerRequestTimer> movementLockTimers = new List<PlayerRequestTimer>();
     bool gravityLocked;
@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour
         CheckInputs();
         UpdateDebugVisuals();
     }
-    public void AddRequest(PlayerRequest request)
+    public void AddRequest(PlayerMovementRequest request)
     {
         //receive movement requests from outside
         requests.Add(request);
@@ -145,29 +145,29 @@ public class PlayerController : MonoBehaviour
 
             switch (r.type)
             {
-                case PlayerRequestType.AddVelocity:
+                case PlayerMovementRequestType.AddVelocity:
                     velocity += r.vector;
                     break;
 
-                case PlayerRequestType.SetVelocity:
+                case PlayerMovementRequestType.SetVelocity:
                     velocity = r.vector;
                     break;
 
-                case PlayerRequestType.SetPosition:
+                case PlayerMovementRequestType.SetPosition:
                     rb.position = r.vector;
                     break;
 
-                case PlayerRequestType.AddPosition:
+                case PlayerMovementRequestType.AddPosition:
                     rb.position += r.vector;
                     break;
 
-                case PlayerRequestType.LockMovement:
+                case PlayerMovementRequestType.LockMovement:
                     pRT.remaining = r.duration;
                     pRT.priority = r.priority;
                     movementLockTimers.Add(pRT);
                     break;
 
-                case PlayerRequestType.UnlockMovement:
+                case PlayerMovementRequestType.UnlockMovement:
                     for (int i = movementLockTimers.Count - 1; i >= 0; i--)
                     {
                         if (movementLockTimers[i].priority <= r.priority)
@@ -177,13 +177,13 @@ public class PlayerController : MonoBehaviour
                     }
                     break;
 
-                case PlayerRequestType.LockGravity:
+                case PlayerMovementRequestType.LockGravity:
                     pRT.remaining = r.duration;
                     pRT.priority = r.priority;
                     gravityLockTimers.Add(pRT);
                     break;
 
-                case PlayerRequestType.UnlockGravity:
+                case PlayerMovementRequestType.UnlockGravity:
                     for (int i = gravityLockTimers.Count - 1; i >= 0; i--)
                     {
                         if (gravityLockTimers[i].priority <= r.priority)
@@ -193,13 +193,13 @@ public class PlayerController : MonoBehaviour
                     }
                     break;
 
-                case PlayerRequestType.LockVelocity:
+                case PlayerMovementRequestType.LockVelocity:
                     pRT.remaining = r.duration;
                     pRT.priority = r.priority;
                     velocityLockTimers.Add(pRT);
                     break;
 
-                case PlayerRequestType.UnlockVelocity:
+                case PlayerMovementRequestType.UnlockVelocity:
                     for (int i = velocityLockTimers.Count - 1; i >= 0; i--)
                     {
                         if (velocityLockTimers[i].priority <= r.priority)
@@ -209,16 +209,16 @@ public class PlayerController : MonoBehaviour
                     }
                     break;
 
-                case PlayerRequestType.CancelHold:
+                case PlayerMovementRequestType.CancelHold:
                     holding = false;
                     slipping = false;
                     break;
 
-                case PlayerRequestType.OverrideGravity:
+                case PlayerMovementRequestType.OverrideGravity:
                     gravity = r.values[0];
                     break;
 
-                case PlayerRequestType.DisableJumpInterrupt:
+                case PlayerMovementRequestType.DisableJumpInterrupt:
                     canInterruptJump = false;
                     break;
             }

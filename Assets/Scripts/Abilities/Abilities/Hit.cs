@@ -55,14 +55,14 @@ public class Hit : Ability
     override public void InitIndiv()
     {
         this.remainingDuration = duration;
-        PlayerRequest rq = new PlayerRequest();
-        rq.type = PlayerRequestType.LockVelocity;
+        PlayerMovementRequest rq = new PlayerMovementRequest();
+        rq.type = PlayerMovementRequestType.LockVelocity;
         rq.duration = remainingDuration;
         rq.priority = 1;
         abilityContext.playerController.AddRequest(rq);
 
-        PlayerRequest rq2 = new PlayerRequest();
-        rq2.type = PlayerRequestType.CancelHold;
+        PlayerMovementRequest rq2 = new PlayerMovementRequest();
+        rq2.type = PlayerMovementRequestType.CancelHold;
         abilityContext.playerController.AddRequest(rq2);
 
 
@@ -116,17 +116,17 @@ public class Hit : Ability
             {
                 case HitboxHolder.Entity:
                 case HitboxHolder.Enviroment:
-                    PlayerRequest rq = new PlayerRequest();
-                    rq.type = PlayerRequestType.UnlockVelocity;
+                    PlayerMovementRequest rq = new PlayerMovementRequest();
+                    rq.type = PlayerMovementRequestType.UnlockVelocity;
                     rq.priority = 2;
                     abilityContext.playerController.AddRequest(rq);
 
-                    PlayerRequest rq3 = new PlayerRequest();
-                    rq3.type = PlayerRequestType.DisableJumpInterrupt;
+                    PlayerMovementRequest rq3 = new PlayerMovementRequest();
+                    rq3.type = PlayerMovementRequestType.DisableJumpInterrupt;
                     abilityContext.playerController.AddRequest(rq3);
 
-                    PlayerRequest rq2 = new PlayerRequest();
-                    rq2.type = PlayerRequestType.SetVelocity;
+                    PlayerMovementRequest rq2 = new PlayerMovementRequest();
+                    rq2.type = PlayerMovementRequestType.SetVelocity;
                     rq2.vector = Vector2.up * 12;
                     rq2.priority = 2;
                     if (abilityContext.direction == AbilityDirection.SouthEast)
@@ -139,8 +139,8 @@ public class Hit : Ability
                     }
                     abilityContext.playerController.AddRequest(rq2);
 
-                    PlayerRequest rq5 = new PlayerRequest();
-                    rq5.type = PlayerRequestType.LockMovement;
+                    PlayerMovementRequest rq5 = new PlayerMovementRequest();
+                    rq5.type = PlayerMovementRequestType.LockMovement;
                     rq5.duration = 0.1f;
                     abilityContext.playerController.AddRequest(rq5);
                     break;

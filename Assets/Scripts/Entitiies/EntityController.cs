@@ -32,6 +32,8 @@ public class EntityController : MonoBehaviour
     public EntityMovementDirection entityMovementDirection;
     EntityMovementDirection lastEntityMovementDirection;
     SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
+
+    public int health;
     void Start()
     {
         rb.gravityScale = 0;
@@ -40,6 +42,7 @@ public class EntityController : MonoBehaviour
     // Update is called once per frame
     protected virtual void FixedUpdate()
     {
+        if (CheckDeath()) return;
         ProcessRequests();
         CheckParameterAccessibility();
         velocity = CheckGravity(velocity);
@@ -384,5 +387,15 @@ public class EntityController : MonoBehaviour
             case SimpleEntityMovementDirection.West: return GetEntityMovementDirectionVector(EntityMovementDirection.West);
             default: return GetEntityMovementDirectionVector(EntityMovementDirection.None);
         }
+    }
+
+    bool CheckDeath()
+    {
+        if (health <= 0)
+        {
+            Destroy(entityObject);
+            return true;
+        }
+        return false;
     }
 }

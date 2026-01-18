@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class HitboxContext : MonoBehaviour
 {
-    public HitboxHolder hitboxHolder;
+    public HitboxHolder hitboxHolder; 
     public AbilityOrigin abilityOrigin;
     public GameObject originObject;
-    public float damage;
+    public int damage;
     public float knockback;
 }

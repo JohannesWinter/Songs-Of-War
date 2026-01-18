@@ -7,6 +7,7 @@ public class PlayerManager : MonoBehaviour
     public PlayerController playerController;
     public PlayerAbilityController playerAbilityController;
     public PlayerHitboxController playerHitboxController;
+    public PlayerStatsController playerStatsController;
 
     public InputState right;
     public InputState left;
@@ -101,7 +102,7 @@ public enum PlayerMovementDirection
     Right,
     Left,
 }
-public enum PlayerRequestType
+public enum PlayerMovementRequestType
 {
     AddVelocity,
     SetVelocity,
@@ -117,13 +118,28 @@ public enum PlayerRequestType
     CancelHold,
     DisableJumpInterrupt,
 }
-public struct PlayerRequest
+public struct PlayerMovementRequest
 {
-    public PlayerRequestType type;
+    public PlayerMovementRequestType type;
     public int priority; // 0 - irrelevent, 1 - low, 2 - normal, 3 - high, 4 - critical
     public Vector2 vector;
     public float duration;
     public float[] values;
+}
+public enum PlayerStatsRequestType
+{
+    SetHealth,
+    AddHealth,
+    SetDamage,
+    AddDamage,
+}
+public struct PlayerStatsRequest
+{
+    public PlayerStatsRequestType type;
+    public int priority;
+    public int intValue;
+    public float floatValue;
+    public float[] otherValues;
 }
 
 public class PlayerRequestTimer
