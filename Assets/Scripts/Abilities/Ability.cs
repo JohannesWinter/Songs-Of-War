@@ -15,6 +15,7 @@ public abstract class Ability : MonoBehaviour
         hitboxContext.hitboxHolder = HitboxHolder.Ability;
         hitboxContext.abilityOrigin = ctx.origin;
 
+        this.transform.parent = Manager.m.abilityManager.abilityFolder.transform;
         ctx.gameObject.transform.parent = this.gameObject.transform;
         hitboxContext.transform.parent = this.gameObject.transform;
 
@@ -22,6 +23,8 @@ public abstract class Ability : MonoBehaviour
         for (int i = 0; i < colliders.Length; i++)
         {
             colliders[i].gameObject.AddComponent<HitboxTrigger>();
+            colliders[i].gameObject.AddComponent<Rigidbody2D>();
+            colliders[i].gameObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
         }
 
         HitboxTrigger[] hitboxes = gameObject.GetComponentsInChildren<HitboxTrigger>();
@@ -34,5 +37,5 @@ public abstract class Ability : MonoBehaviour
         InitIndiv();
     }
     public abstract void InitIndiv();
-    public abstract void HandleHit(Collider2D collider);
+    public abstract void HandleHit(HitboxTrigger collider);
 }

@@ -41,6 +41,7 @@ public class PlayerAbilityController : MonoBehaviour
         currentHitCooldown -= Time.deltaTime;
         if (currentHitCooldown <= 0 && playerManager.hit.press && currentAbility == null)
         {
+
             currentHitCooldown = hitCooldown;
 
             bool up = playerManager.up.hold;
@@ -60,17 +61,21 @@ public class PlayerAbilityController : MonoBehaviour
             else if (left) direction = AbilityDirection.West;
             else direction = lastDirection;
 
-            AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
-            ctx.abilityDef = AbilityDef.Hit;
-            ctx.direction = direction;
-            ctx.origin = AbilityOrigin.Player;
-            ctx.originObject = playerManager.playerController.playerObject;
-            ctx.playerController = playerManager.playerController;
+            if (!(playerManager.playerController.GetIsGrounded() && (
+                direction == AbilityDirection.South || 
+                direction == AbilityDirection.SouthWest || 
+                direction == AbilityDirection.SouthEast)))
+            {
+                AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
+                ctx.abilityDef = AbilityDef.Hit;
+                ctx.direction = direction;
+                ctx.origin = AbilityOrigin.Player;
+                ctx.originObject = playerManager.playerController.playerObject;
+                ctx.playerController = playerManager.playerController;
 
-            (GameObject abilityObject, Ability ability) = Manager.m.abilityManager.RunAbility(ctx);
-            abilityObject.transform.parent = playerAbilityFolder;
-            currentAbility = ability;
-
+                (GameObject abilityObject, Ability ability) = Manager.m.abilityManager.RunAbility(ctx);
+                currentAbility = ability;
+            }
         }
     }
 }

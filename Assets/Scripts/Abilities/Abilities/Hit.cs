@@ -15,6 +15,8 @@ public class Hit : Ability
 
     public float duration;
 
+    bool hitSomething;
+
     float remainingDuration;
     void Awake()
     {
@@ -44,7 +46,10 @@ public class Hit : Ability
         {
             Destroy(this.gameObject);
         }
-        this.gameObject.transform.position = abilityContext.originObject.transform.position;
+        if (hitSomething == false)
+        {
+            this.gameObject.transform.position = abilityContext.originObject.transform.position;
+        }
     }
 
     override public void InitIndiv()
@@ -99,9 +104,9 @@ public class Hit : Ability
         }
     }
 
-    override public void HandleHit(Collider2D Collider2D)
+    override public void HandleHit(HitboxTrigger other)
     {
-        HitboxContext hBC = Collider2D.GetComponent<HitboxContext>();
+        HitboxContext hBC = other.parentHitboxContext;
         if (hBC == null) return;
         if (abilityContext.direction == AbilityDirection.South ||
         abilityContext.direction == AbilityDirection.SouthEast ||
@@ -110,22 +115,36 @@ public class Hit : Ability
             switch (hBC.hitboxHolder)
             {
                 case HitboxHolder.Entity:
-                        PlayerRequest rq = new PlayerRequest();
-                        rq.type = PlayerRequestType.UnlockVelocity;
-                        rq.priority = 2;
-                        abilityContext.playerController.AddRequest(rq);
+                    PlayerRequest rq = new PlayerRequest();
+                    rq.type = PlayerRequestType.UnlockVelocity;
+                    rq.priority = 2;
+                    abilityContext.playerController.AddRequest(rq);
 
-                        PlayerRequest rq2 = new PlayerRequest();
-                        rq2.type = PlayerRequestType.SetVelocity;
-                        rq2.vector = Vector2.up * 15;
-                        rq2.priority = 3;
-                        abilityContext.playerController.AddRequest(rq2);
+                    PlayerRequest rq3 = new PlayerRequest();
+                    rq3.type = PlayerRequestType.DisableJumpInterrupt;
+                    abilityContext.playerController.AddRequest(rq3);
 
-                        PlayerRequest rq3 = new PlayerRequest();
-                        rq3.type = PlayerRequestType.DisableJumpInterrupt;
-                        abilityContext.playerController.AddRequest(rq3);
-                break;
+                    PlayerRequest rq2 = new PlayerRequest();
+                    rq2.type = PlayerRequestType.SetVelocity;
+                    rq2.vector = Vector2.up * 15;
+                    rq2.priority = 2;
+                    if (abilityContext.direction == AbilityDirection.SouthEast)
+                    {
+                        rq2.vector += Vector2.left * 10;
+                    }
+                    else if (abilityContext.direction == AbilityDirection.SouthWest)
+                    {
+                        rq2.vector += Vector2.right * 10;
+                    }
+                    abilityContext.playerController.AddRequest(rq2);
+
+                    PlayerRequest rq5 = new PlayerRequest();
+                    rq5.type = PlayerRequestType.LockMovement;
+                    rq5.duration = 0.1f;
+                    abilityContext.playerController.AddRequest(rq5);
+                    break;
             }
         }
+        hitSomething = true;
     }
 }

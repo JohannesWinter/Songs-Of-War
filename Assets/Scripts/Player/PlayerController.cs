@@ -263,7 +263,7 @@ public class PlayerController : MonoBehaviour
     void CheckParameterAccessibility()
     {
         //resets on-ground parameters
-        if (IsGrounded(velocity))
+        if (IsGrounded())
         {
             canInterruptJump = true;
             canHoldOnWall = true;
@@ -309,7 +309,7 @@ public class PlayerController : MonoBehaviour
         if (movementLocked) return velocity;
 
         //checks jump movement
-        if (pressedJumpFixedUpdate && (IsGrounded(velocity) || holding || slipping))
+        if (pressedJumpFixedUpdate && (IsGrounded() || holding || slipping))
         {
             pressedJumpFixedUpdate = false;
             enabledGroundBuffer = 0;
@@ -377,7 +377,7 @@ public class PlayerController : MonoBehaviour
         if (movementLocked) return;
 
         //check stepup logic
-        if (IsGrounded(currentVelocity) == false) { return; }
+        if (IsGrounded() == false) { return; }
 
         Vector2 origin = (Vector2)playerRoot.transform.position + Vector2.up * 0.05f;
 
@@ -442,7 +442,7 @@ public class PlayerController : MonoBehaviour
         if (movementLocked) return;
 
         //check hold logic
-        if (IsGrounded(currentVelocity) == true || disabledGroundBuffer > 0 || canHoldOnWall == false || slipping == true || holding == true) return;
+        if (IsGrounded() == true || disabledGroundBuffer > 0 || canHoldOnWall == false || slipping == true || holding == true) return;
 
         Vector2 origin = (Vector2)playerRoot.transform.position + Vector2.up * 0.05f;
 
@@ -571,7 +571,7 @@ public class PlayerController : MonoBehaviour
         return true;
     }
 
-    bool IsGrounded(Vector2 velocity)
+    bool IsGrounded()
     {
         RaycastHit2D downCheck = Physics2D.Raycast(
             (Vector2)playerObject.transform.position,
@@ -600,6 +600,30 @@ public class PlayerController : MonoBehaviour
             enabledGroundBuffer = groundBufferDuration;
         }
         return (grounded || (enabledGroundBuffer > 0 && disabledGroundBuffer <= 0));
+    }
+    public bool GetIsGrounded()
+    {
+        RaycastHit2D downCheck = Physics2D.Raycast(
+            (Vector2)playerObject.transform.position,
+            Vector2.down,
+            playerObject.transform.localScale.y / 2 + 0.05f,
+            groundLayer
+        );
+        RaycastHit2D downCheckRight = Physics2D.Raycast(
+            (Vector2)playerObject.transform.position + Vector2.right * playerObject.transform.localScale.x / 2 * 0.95f,
+            Vector2.down,
+            playerObject.transform.localScale.y / 2 + 0.05f,
+            groundLayer
+        );
+        RaycastHit2D downCheckLeft = Physics2D.Raycast(
+            (Vector2)playerObject.transform.position + Vector2.left * playerObject.transform.localScale.x / 2 * 0.95f,
+            Vector2.down,
+            playerObject.transform.localScale.y / 2 + 0.05f,
+            groundLayer
+        );
+
+        bool grounded = (downCheck || downCheckLeft || downCheckRight);
+        return grounded;
     }
     bool IsTopFree(Vector2 targetPosition)
     {

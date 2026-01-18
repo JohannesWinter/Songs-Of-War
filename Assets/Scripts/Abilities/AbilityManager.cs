@@ -7,6 +7,7 @@ public class AbilityManager : MonoBehaviour
 {
     public GameObject[] abilityObjects;
     public AbilityContext abilityContext;
+    public Transform abilityFolder;
 
     public (GameObject, Ability) RunAbility(AbilityContext ctx)
     {
