@@ -452,7 +452,7 @@ MonoBehaviour:
   nwCol: {fileID: 4277460116284183495}
   seCol: {fileID: 1907715425602862232}
   swCol: {fileID: 8906510556307142415}
-  duration: 0.12
+  duration: 0.1
 --- !u!1 &2505636276278518204
 GameObject:
   m_ObjectHideFlags: 0

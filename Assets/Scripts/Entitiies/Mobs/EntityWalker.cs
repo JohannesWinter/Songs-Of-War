@@ -10,9 +10,13 @@ public class EntityWalker : EntityController
     public float gottenKnockback;
     public SimpleEntityMovementDirection currentMovementDirection = SimpleEntityMovementDirection.East;
     public HitboxTrigger hitboxTrigger;
+    public float knockBack;
+    public float damage;
     public void Start()
     {
         hitboxTrigger.onHit += OnHitboxHit;
+        hitboxTrigger.hitboxContext.knockback = knockBack;
+        hitboxTrigger.hitboxContext.damage = damage;
     }
 
 
@@ -55,7 +59,7 @@ public class EntityWalker : EntityController
     private void OnHitboxHit(HitboxTrigger other)
     {
         var ctx = other.hitboxContext;
-        if (ctx.hitboxHolder == HitboxHolder.Entity)
+        if (ctx.hitboxHolder == HitboxHolder.Entity || ctx.hitboxHolder == HitboxHolder.Player)
         {
             return;
         }

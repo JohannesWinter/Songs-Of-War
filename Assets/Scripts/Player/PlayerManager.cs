@@ -6,6 +6,7 @@ public class PlayerManager : MonoBehaviour
 {
     public PlayerController playerController;
     public PlayerAbilityController playerAbilityController;
+    public PlayerHitboxController playerHitboxController;
 
     public InputState right;
     public InputState left;

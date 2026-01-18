@@ -7,4 +7,6 @@ public class HitboxContext : MonoBehaviour
     public HitboxHolder hitboxHolder;
     public AbilityOrigin abilityOrigin;
     public GameObject originObject;
+    public float damage;
+    public float knockback;
 }

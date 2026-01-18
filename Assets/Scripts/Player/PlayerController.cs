@@ -42,12 +42,14 @@ public class PlayerController : MonoBehaviour
     public float wallJumpBufferDuration;
     public float playerMinGripHeight;
     public bool canWallJump;
+    public float friction;
 
     bool canInterruptJump;
     bool canHoldOnWall;
     float canHoldOnWallTimer;
     bool pressedJumpFixedUpdate;
     bool holdingJumpFixedUpdate;
+    
     public bool holding { get; private set; }
     public bool slipping { get; private set; }
 
@@ -336,25 +338,33 @@ public class PlayerController : MonoBehaviour
             switch (playerMovementDirection)
             {
                 case PlayerMovementDirection.Right:
-                    velocity.x += horizontalAcceleration * Time.fixedDeltaTime;
                     if (velocity.x < 0)
                     {
-                        velocity.x = 0;
+                        velocity.x += horizontalAcceleration * Time.fixedDeltaTime * 5;
+                    }
+                    else if (velocity.x < horizontalMaxSpeed)
+                    {
+                        velocity.x += horizontalAcceleration * Time.fixedDeltaTime;
                     }
                     break;
                 case PlayerMovementDirection.Left:
                     if (velocity.x > 0)
                     {
-                        velocity.x = 0;
+                        velocity.x -= horizontalAcceleration * Time.fixedDeltaTime * 5; ;
                     }
-                    velocity.x -= horizontalAcceleration * Time.fixedDeltaTime;
+                    else if (velocity.x > -horizontalMaxSpeed)
+                    {
+                        velocity.x -= horizontalAcceleration * Time.fixedDeltaTime;
+                    }
                     break;
                 case PlayerMovementDirection.None:
                     velocity.x = 0;
                     break;
             }
-            if (velocity.x > horizontalMaxSpeed) velocity.x = horizontalMaxSpeed;
-            if (velocity.x < -horizontalMaxSpeed) velocity.x = -horizontalMaxSpeed;
+            //if (velocity.x > horizontalMaxSpeed) velocity.x = horizontalMaxSpeed;
+            //if (velocity.x < -horizontalMaxSpeed) velocity.x = -horizontalMaxSpeed;
+
+            velocity.x *= Mathf.Pow(1 - friction, Time.fixedDeltaTime);
         }
         return velocity;
     }

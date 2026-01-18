@@ -115,6 +115,7 @@ public class Hit : Ability
             switch (hBC.hitboxHolder)
             {
                 case HitboxHolder.Entity:
+                case HitboxHolder.Enviroment:
                     PlayerRequest rq = new PlayerRequest();
                     rq.type = PlayerRequestType.UnlockVelocity;
                     rq.priority = 2;
@@ -126,7 +127,7 @@ public class Hit : Ability
 
                     PlayerRequest rq2 = new PlayerRequest();
                     rq2.type = PlayerRequestType.SetVelocity;
-                    rq2.vector = Vector2.up * 15;
+                    rq2.vector = Vector2.up * 12;
                     rq2.priority = 2;
                     if (abilityContext.direction == AbilityDirection.SouthEast)
                     {
