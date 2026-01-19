@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour
     public float playerMinGripHeight;
     public bool canWallJump;
     public float friction;
+    public float hitInvincibilityTime;
 
     bool canInterruptJump;
     bool canHoldOnWall;

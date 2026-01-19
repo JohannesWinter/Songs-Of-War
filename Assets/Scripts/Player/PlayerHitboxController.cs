@@ -6,13 +6,23 @@ public class PlayerHitboxController : MonoBehaviour
 {
     public HitboxTrigger playerHitboxTrigger;
     public HitboxContext playerHitboxContext;
+    PlayerStatsController playerStatsController;
+
     void Start()
     {
         playerHitboxTrigger.onHit += OnHitboxHit;
+        playerStatsController = Manager.m.playerManager.playerStatsController;
     }
     void Update()
     {
-        
+        if (playerStatsController.GetInvincibil())
+        {
+            playerHitboxTrigger.GetComponent<Collider2D>().enabled = false;
+        }
+        else
+        {
+            playerHitboxTrigger.GetComponent<Collider2D>().enabled = true;
+        }
     }
 
     public void OnHitboxHit(HitboxTrigger other)
@@ -43,7 +53,13 @@ public class PlayerHitboxController : MonoBehaviour
             rq2.type = PlayerStatsRequestType.AddHealth;
             rq2.priority = 2;
             rq2.intValue = -ctx.damage;
-            Manager.m.playerManager.playerStatsController.AddRequest(rq2);
+            playerStatsController.AddRequest(rq2);
+
+            var rq3 = new PlayerStatsRequest();
+            rq3.type = PlayerStatsRequestType.SetInvicibility;
+            rq3.priority = 3;
+            rq3.floatValue = Manager.m.playerManager.playerController.hitInvincibilityTime;
+            playerStatsController.AddRequest(rq3);
             
         }
     }

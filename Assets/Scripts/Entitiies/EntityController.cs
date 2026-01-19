@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.LowLevel;
 using UnityEngine.UI;
 
 public class EntityController : MonoBehaviour
@@ -8,7 +9,7 @@ public class EntityController : MonoBehaviour
     public GameObject entityObject;
     public Transform entityRoot;
     public Transform entityTop;
-    public Collider2D entityCollider;
+    public BoxCollider2D entityCollider;
     public Collider2D entityHitbox;
     public Rigidbody2D rb;
     public Vector2 velocity;
@@ -26,19 +27,22 @@ public class EntityController : MonoBehaviour
     public bool velocityLocked { get; private set; }
     List<PlayerRequestTimer> velocityLockTimers = new List<PlayerRequestTimer>();
 
+    public EntityMovementDirection entityMovementDirection;
+    public SimpleEntityMovementDirection simpleEntityMovementDirection;
+    EntityMovementDirection lastEntityMovementDirection;
+    SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
+    public HitboxTrigger[] hitboxTriggers;
+
     public float gravity;
     public float maxFallSpeed;
     public float stepHeight;
-
-    public EntityMovementDirection entityMovementDirection;
-    EntityMovementDirection lastEntityMovementDirection;
-    SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
 
     public int health;
     public bool dead;
     public float bodyTimer;
     float remainingBodyTimer;
     public float friction;
+    public float gottenKnockback;
     void Start()
     {
         rb.gravityScale = 0;
@@ -189,7 +193,7 @@ public class EntityController : MonoBehaviour
         //resets on-ground parameters
         if (IsGrounded())
         {
-            if (velocity.y < -5) velocity.y = -5;
+            if (velocity.y < 0) velocity.y = 0;
         }
         entityMovementDirection = GetDirectionFromVelocity(velocity);
     }
@@ -216,6 +220,70 @@ public class EntityController : MonoBehaviour
         return velocity;
     }
 
+    protected void TryStepUp(Vector2 currentVelocity)
+    {
+        //check if stepup (movement) is enabled
+        if (movementLocked) return;
+
+        //check stepup logic
+        if (IsGrounded() == false) { return; }
+
+        Vector2 origin = (Vector2)entityRoot.transform.position + Vector2.up * 0.1f;
+
+        Vector2 direction = Vector2.zero;
+        switch (simpleEntityMovementDirection)
+        {
+            case SimpleEntityMovementDirection.East:
+                direction = Vector2.right;
+                break;
+            case SimpleEntityMovementDirection.West:
+                direction = Vector2.left;
+                break;
+            case SimpleEntityMovementDirection.None:
+                return;
+        }
+        //check if entity can stepup
+        RaycastHit2D lowerHit = Physics2D.Raycast(
+            origin,
+            direction,
+            entityCollider.size.x * entityObject.transform.localScale.x / 2 + 0.1f,
+            groundLayer
+        );
+        if (!lowerHit) return;
+
+        RaycastHit2D upperHit = Physics2D.Raycast(
+            origin + Vector2.up * stepHeight,
+            direction,
+            entityCollider.size.x * entityObject.transform.localScale.x / 2 + 0.1f,
+            groundLayer
+        );
+        float currentStepHeight = stepHeight;
+        int counter = 10;
+        while (counter > 0)
+        {
+            RaycastHit2D newHit = Physics2D.Raycast(
+                origin + Vector2.up * (currentStepHeight - stepHeight / 10),
+                direction,
+                entityCollider.size.x * entityObject.transform.localScale.x / 2 + 0.1f,
+                groundLayer
+            );
+            if (!newHit)
+            {
+                upperHit = newHit;
+                currentStepHeight -= stepHeight / 10;
+            }
+            else
+            {
+                break;
+            }
+            counter--;
+        }
+        //entity steps up
+        if (!upperHit)
+        {
+            entityObject.transform.position += Vector3.up * (currentStepHeight + stepHeight / 5) + (Vector3)direction * 0.15f;
+        }
+    }
 
     Vector2 CheckGravity(Vector2 velocity)
     {
@@ -240,11 +308,12 @@ public class EntityController : MonoBehaviour
         {
             lastEntityMovementDirection = entityMovementDirection;
         }
+        simpleEntityMovementDirection = GetSimpleEntityMovementDirection(entityMovementDirection);
+        lastSimpleEntityMovementDirection = GetLastSimpleEntityMovementDirection(entityMovementDirection, lastSimpleEntityMovementDirection);
         positionLastFrame = entityObject.transform.position;
-        lastSimpleEntityMovementDirection = GetSimpleEntityMovementDirection(entityMovementDirection, lastSimpleEntityMovementDirection);
     }
 
-    protected SimpleEntityMovementDirection GetSimpleEntityMovementDirection(EntityMovementDirection entityMovementDirection, SimpleEntityMovementDirection lastSimpleEntityMovementDirection)
+    protected SimpleEntityMovementDirection GetLastSimpleEntityMovementDirection(EntityMovementDirection entityMovementDirection, SimpleEntityMovementDirection lastSimpleEntityMovementDirection)
     {
         //returns new Value (East/West) as current facing direction
         if (entityMovementDirection == EntityMovementDirection.None ||
@@ -269,6 +338,22 @@ public class EntityController : MonoBehaviour
         else
         {
             return SimpleEntityMovementDirection.West;
+        }
+    }
+    protected SimpleEntityMovementDirection GetSimpleEntityMovementDirection(EntityMovementDirection entityMovementDirection)
+    {
+        switch (entityMovementDirection)
+        {
+            case EntityMovementDirection.East:
+            case EntityMovementDirection.NorthEast:
+            case EntityMovementDirection.SouthEast:
+                return SimpleEntityMovementDirection.East;
+            case EntityMovementDirection.West:
+            case EntityMovementDirection.NorthWest:
+            case EntityMovementDirection.SouthWest:
+                return SimpleEntityMovementDirection.West;
+            default:
+                return SimpleEntityMovementDirection.None;
         }
     }
 
@@ -296,14 +381,14 @@ public class EntityController : MonoBehaviour
         bool grounded = (downCheck || downCheckLeft || downCheckRight);
         return grounded;
     }
-    protected bool IsTopFree(Vector2 targetPosition)
+    protected bool IsTopFree(Vector2 targetPosition, float distance = 0.1f)
     {
         for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
                 targetPosition + Vector2.right * (-entityObject.transform.localScale.x / 2 + (entityObject.transform.localScale.x * i / 10)),
                 Vector2.up,
-                entityObject.transform.localScale.y / 2 + 0.1f,
+                entityObject.transform.localScale.y / 2 + distance,
                 groundLayer
                 );
             if (topHit == true)
@@ -313,14 +398,14 @@ public class EntityController : MonoBehaviour
         }
         return true;
     }
-    protected bool IsBotFree(Vector2 targetPosition)
+    protected bool IsBotFree(Vector2 targetPosition, float distance = 0.05f)
     {
         for (int i = 0; i < 10; i++)
         {
             bool topHit = Physics2D.Raycast(
                 targetPosition + Vector2.right * (-entityObject.transform.localScale.x / 2 + (entityObject.transform.localScale.x * i / 10)),
                 Vector2.down,
-                entityObject.transform.localScale.y / 2 + 0.05f,
+                entityObject.transform.localScale.y / 2 + distance,
                 groundLayer
                 );
             if (topHit == true)
@@ -333,13 +418,16 @@ public class EntityController : MonoBehaviour
 
     protected bool IsTouchingWall(SimpleEntityMovementDirection lastSimpleEMD, EntityMovementDirection eMD = EntityMovementDirection.None, float maxDistance = 0.1f)
     {
-        if (GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
+        if (GetEntityMovementDirectionVector(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
 
+        Vector2 startPosition = (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + stepHeight);
         for (int i = 0; i < 10; i++)
         {
+            Vector2 testPosition = (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + (entityObject.transform.localScale.y * i / 10));
+            if (testPosition.y < startPosition.y && stepHeight < 1) continue;
             bool topHit = Physics2D.Raycast(
-                (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + (entityObject.transform.localScale.y * i / 10)),
-                GetEntityMovementDirectionVector(GetSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
+                testPosition,
+                GetEntityMovementDirectionVector(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
                 entityObject.transform.localScale.x / 2 + maxDistance,
                 groundLayer
                 );

@@ -87,8 +87,8 @@ public sealed class Manager : MonoBehaviour
                     "ArrowRight",//2
                     "ArrowUp",//3
                     "ArrowDown",//4
-                    "S",//5
-                    "D",//6
+                    "D",//5
+                    "F",//6
                     "A",//7
                     "Q",//8
                     "W",//9

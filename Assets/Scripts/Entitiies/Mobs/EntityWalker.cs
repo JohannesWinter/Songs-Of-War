@@ -7,22 +7,24 @@ public class EntityWalker : EntityController
     public float acceleration;
     public float maxSpeed;
     public float walkwayEndReactionSpeed;
-    public float gottenKnockback;
     public SimpleEntityMovementDirection currentMovementDirection = SimpleEntityMovementDirection.East;
-    public HitboxTrigger hitboxTrigger;
     public float knockBack;
     public int damage;
     public void Start()
     {
-        hitboxTrigger.onHit += OnHitboxHit;
-        hitboxTrigger.hitboxContext.knockback = knockBack;
-        hitboxTrigger.hitboxContext.damage = damage;
+        hitboxTriggers[0].onHit += OnHitboxHit;
+        hitboxTriggers[0].hitboxContext.knockback = knockBack;
+        hitboxTriggers[0].hitboxContext.damage = damage;
     }
 
 
     protected override void FixedUpdate()
     {
-        if (dead == false) BaseMovement();
+        if (dead == false)
+        {
+            BaseMovement();
+            TryStepUp(velocity);
+        }
         else velocity = CheckFriction(velocity);
         base.FixedUpdate();
     }
@@ -39,7 +41,7 @@ public class EntityWalker : EntityController
             {
                 velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
             }
-            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
             {
                 currentMovementDirection = SimpleEntityMovementDirection.West;
             }
@@ -55,7 +57,7 @@ public class EntityWalker : EntityController
             {
                 velocity.x += 1 * Time.fixedDeltaTime * acceleration;
             }
-            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
             {
                 currentMovementDirection = SimpleEntityMovementDirection.East;
             }

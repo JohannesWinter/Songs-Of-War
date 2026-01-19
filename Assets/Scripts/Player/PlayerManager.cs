@@ -132,6 +132,7 @@ public enum PlayerStatsRequestType
     AddHealth,
     SetDamage,
     AddDamage,
+    SetInvicibility,
 }
 public struct PlayerStatsRequest
 {
