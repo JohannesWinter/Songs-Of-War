@@ -32,6 +32,7 @@ public class EntityController : MonoBehaviour
     EntityMovementDirection lastEntityMovementDirection;
     SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
     public HitboxTrigger[] hitboxTriggers;
+    public EntityPlayerdetector playerdetector;
 
     public float gravity;
     public float maxFallSpeed;

@@ -29,7 +29,7 @@ public class EntityWalker : EntityController
         base.FixedUpdate();
     }
 
-    void BaseMovement()
+    protected virtual void BaseMovement()
     {
         if (currentMovementDirection == SimpleEntityMovementDirection.East)
         {
@@ -63,7 +63,7 @@ public class EntityWalker : EntityController
             }
         }
     }
-    private void OnHitboxHit(HitboxTrigger other)
+    protected virtual void OnHitboxHit(HitboxTrigger other)
     {
         var ctx = other.hitboxContext;
         if (ctx.hitboxHolder == HitboxHolder.Entity || ctx.hitboxHolder == HitboxHolder.Player)
