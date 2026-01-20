@@ -14,7 +14,7 @@ public class AbilityManager : MonoBehaviour
         GameObject toLoad = GetAbilityObject(ctx.abilityDef);
         if (toLoad != null)
         {
-            GameObject loaded = Instantiate(abilityObjects[0]);
+            GameObject loaded = Instantiate(GetAbilityObject(ctx.abilityDef));
             loaded.GetComponent<Ability>().Init(ctx);
             return (loaded, loaded.GetComponent<Ability>());
         }

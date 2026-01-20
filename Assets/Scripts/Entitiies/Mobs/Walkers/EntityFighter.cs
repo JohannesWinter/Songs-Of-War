@@ -14,9 +14,13 @@ public class EntityFighter : EntityWalker
     {
         if (castingHitRoutine == null)
         {
+            base.FixedUpdate();
+        }
+        else
+        {
             BaseControllerUpdate();
         }
-        if (SimpleRaycastCheck(simpleEntityMovementDirection, 30, entityObject, 3, LayerMask.GetMask("Player")))
+        if (SimpleRaycastCheck(simpleEntityMovementDirection, 30, entityObject, 1, LayerMask.GetMask("Player")))
         {
             if (currentHitCooldown <= 0)
             {
@@ -32,27 +36,24 @@ public class EntityFighter : EntityWalker
 
     IEnumerator CastHit()
     {
+        var rq = new EntityRequest();
+        rq.type = EntityRequestType.LockVelocity;
+        rq.duration = waitForHitTimer;
+        rq.priority = 3;
+        AddRequest(rq);
         yield return new WaitForSeconds(waitForHitTimer);
 
         AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
         ctx.abilityDef = AbilityDef.Hit;
-        switch (this.simpleEntityMovementDirection)
-        {
-            case SimpleEntityMovementDirection.East:
-                ctx.direction = AbilityDirection.East;
-                break;
-            case SimpleEntityMovementDirection.West:
-                ctx.direction = AbilityDirection.West;
-                break;
-            default:
-                break;
-
-        }
+        ctx.direction = GetAbilityDirectionFromEntityMovementDirction(GetEntityMovementDirectionFromSimpleEntityMovementDirection(currentMovementDirection));
         ctx.origin = AbilityOrigin.Entity;
         ctx.originObject = entityObject;
         ctx.entityController = this;
         ctx.damage = this.damage;
-
-        yield return null;
+        ctx.abilityDef = AbilityDef.EntityFighterHit;
+        ctx.knockBack = this.knockBack;
+        (_, var hitAbility) = Manager.m.abilityManager.RunAbility(ctx);
+        while (hitAbility != null) yield return null;
+        castingHitRoutine = null;
     }
 }

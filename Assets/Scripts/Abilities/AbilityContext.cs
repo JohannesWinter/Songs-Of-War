@@ -12,4 +12,5 @@ public class AbilityContext : MonoBehaviour
     public EntityController entityController;
     public Ability ability;
     public int damage;
+    public float knockBack;
 }

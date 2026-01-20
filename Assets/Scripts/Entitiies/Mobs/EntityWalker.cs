@@ -66,14 +66,14 @@ public class EntityWalker : EntityController
     protected virtual void OnHitboxHit(HitboxTrigger other)
     {
         var ctx = other.hitboxContext;
-        if (ctx.hitboxHolder == HitboxHolder.Entity || ctx.hitboxHolder == HitboxHolder.Player)
+        if (ctx.hitboxHolder == HitboxHolder.Entity || ctx.hitboxHolder == HitboxHolder.Player || ctx.abilityOrigin == AbilityOrigin.Entity)
         {
             return;
         }
         health -= ctx.damage;
         Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position).normalized;
         Vector2 oppositePosition = relativePosition * -1; 
-        Vector2 knockBack = oppositePosition * gottenKnockback;
+        Vector2 knockBack = oppositePosition * gottenKnockback * ctx.knockback;
         if (IsGrounded())
         {
             knockBack.y = gottenKnockback;

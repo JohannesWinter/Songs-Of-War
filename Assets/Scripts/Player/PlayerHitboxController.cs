@@ -29,7 +29,7 @@ public class PlayerHitboxController : MonoBehaviour
     {
         var ctx = other.hitboxContext;
         if (ctx.hitboxHolder == HitboxHolder.Player || ctx.abilityOrigin == AbilityOrigin.Player) { return; }
-        if (ctx.hitboxHolder == HitboxHolder.Entity)
+        if (ctx.hitboxHolder == HitboxHolder.Entity || ctx.abilityOrigin == AbilityOrigin.Entity)
         {
             PlayerController pc = Manager.m.playerManager.playerController;
             Vector2 relativePosition = (pc.playerObject.transform.position - ctx.originObject.transform.position).normalized;

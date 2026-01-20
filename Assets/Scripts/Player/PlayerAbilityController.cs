@@ -73,6 +73,7 @@ public class PlayerAbilityController : MonoBehaviour
                 ctx.originObject = playerManager.playerController.playerObject;
                 ctx.playerController = playerManager.playerController;
                 ctx.damage = playerManager.playerStatsController.GetDamage();
+                ctx.knockBack = 1;
 
                 (GameObject abilityObject, Ability ability) = Manager.m.abilityManager.RunAbility(ctx);
                 currentAbility = ability;

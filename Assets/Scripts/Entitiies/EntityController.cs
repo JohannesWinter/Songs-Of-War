@@ -29,8 +29,8 @@ public class EntityController : MonoBehaviour
 
     public EntityMovementDirection entityMovementDirection;
     public SimpleEntityMovementDirection simpleEntityMovementDirection;
-    EntityMovementDirection lastEntityMovementDirection;
-    SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
+    protected EntityMovementDirection lastEntityMovementDirection;
+    protected SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
     public HitboxTrigger[] hitboxTriggers;
     public EntityPlayerdetector playerdetector;
 
@@ -491,6 +491,31 @@ public class EntityController : MonoBehaviour
             case SimpleEntityMovementDirection.East: return GetEntityMovementDirectionVector(EntityMovementDirection.East);
             case SimpleEntityMovementDirection.West: return GetEntityMovementDirectionVector(EntityMovementDirection.West);
             default: return GetEntityMovementDirectionVector(EntityMovementDirection.None);
+        }
+    }
+
+    public static AbilityDirection GetAbilityDirectionFromEntityMovementDirction(EntityMovementDirection eMD)
+    {
+        switch (eMD)
+        {
+            case EntityMovementDirection.North: return AbilityDirection.North;
+            case EntityMovementDirection.NorthEast: return AbilityDirection.NorthEast;
+            case EntityMovementDirection.East: return AbilityDirection.East;
+            case EntityMovementDirection.SouthEast: return AbilityDirection.SouthEast;
+            case EntityMovementDirection.South: return AbilityDirection.South;
+            case EntityMovementDirection.SouthWest: return AbilityDirection.SouthWest;
+            case EntityMovementDirection.West: return AbilityDirection.West;
+            case EntityMovementDirection.NorthWest: return AbilityDirection.NorthWest;
+            default: return AbilityDirection.None;
+        }
+    }
+    public static EntityMovementDirection GetEntityMovementDirectionFromSimpleEntityMovementDirection(SimpleEntityMovementDirection eMD)
+    {
+        switch (eMD)
+        {
+            case SimpleEntityMovementDirection.East: return EntityMovementDirection.East;
+            case SimpleEntityMovementDirection.West: return EntityMovementDirection.West;
+            default: return EntityMovementDirection.None;
         }
     }
 

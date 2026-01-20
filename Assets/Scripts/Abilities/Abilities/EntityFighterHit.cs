@@ -15,8 +15,8 @@ public class EntityFighterHit : Ability
     public GameObject swCol;
 
     public float duration;
-
     bool hitSomething;
+ 
 
     float remainingDuration;
     void Awake()
