@@ -576,4 +576,42 @@ public class EntityController : MonoBehaviour
 
         return false;
     }
+
+    public static bool SimpleRaycastCheck(
+    Vector2 direction,
+    float spreadAngle,
+    GameObject originObject,
+    float distance,
+    LayerMask layerMask,
+    int rayCount = 10
+)
+    {
+        if (direction == Vector2.zero)
+            return false;
+
+        Vector2 baseDir = direction;
+        Vector2 origin = originObject.transform.position;
+
+        if (rayCount < 1) rayCount = 1;
+        float halfSpread = spreadAngle * 0.5f;
+
+        for (int i = 0; i < rayCount; i++)
+        {
+            float t = rayCount == 1 ? 0.5f : (float)i / (rayCount - 1);
+            float angle = Mathf.Lerp(-halfSpread, halfSpread, t);
+
+            Vector2 dir = Quaternion.Euler(0, 0, angle) * baseDir;
+
+            RaycastHit2D hit = Physics2D.Raycast(origin, dir, distance, layerMask);
+            Debug.DrawRay(origin, dir * distance, hit ? Color.red : Color.green, 0.05f);
+
+
+            if (hit.collider != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
