@@ -7,12 +7,28 @@ public class EntityRammer : EntityWalker
     public float ramAcceleration;
     public float ramMaxSpeed;
     public bool ramming;
+    public float startRamDistance;
+    public float ramCooldown;
+    float currentRamCooldown;
     
 
     protected override void FixedUpdate()
     {
-        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, 1,layerMask: 9)) ramming = true;
+        CheckRam();
         base.FixedUpdate();
+    }
+
+    protected virtual void CheckRam()
+    {
+        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, startRamDistance, LayerMask.GetMask("Player")) && currentRamCooldown < 0)
+        {
+            ramming = true;
+            currentRamCooldown = ramCooldown;
+        }
+        if (currentRamCooldown > 0)
+        {
+            currentRamCooldown -= Time.fixedDeltaTime;
+        }
     }
 
     protected override void BaseMovement()

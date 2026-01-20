@@ -537,9 +537,11 @@ public class EntityController : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(origin, dir, distance, layerMask);
             Debug.DrawRay(origin, dir * distance, hit ? Color.red : Color.green, 0.05f);
 
+
             if (hit.collider != null)
-                print(hit.collider.gameObject);
+            {
                 return true;
+            }
         }
 
         return false;
