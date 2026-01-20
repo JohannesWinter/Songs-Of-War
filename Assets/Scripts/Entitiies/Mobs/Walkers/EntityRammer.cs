@@ -33,7 +33,7 @@ public class EntityRammer : EntityWalker
 
     protected virtual bool CheckRam()
     {
-        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, startRamDistance, LayerMask.GetMask("Player")))
+        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, startRamDistance, LayerMask.GetMask("Player"), 0))
         {
             return true;
         }

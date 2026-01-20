@@ -6,7 +6,11 @@ public class EntityFighter : EntityWalker
 {
     public float hitCooldown;
     public float waitForHitTimer;
+    public float outOfCombatSpeed;
+    //overrides normal speed
+    public float inCombatSpeed;
     float currentHitCooldown;
+    bool inCombat;
     
     Coroutine castingHitRoutine;
 
@@ -20,7 +24,7 @@ public class EntityFighter : EntityWalker
         {
             BaseControllerUpdate();
         }
-        if (SimpleRaycastCheck(simpleEntityMovementDirection, 30, entityObject, 1, LayerMask.GetMask("Player")))
+        if (SimpleRaycastCheck(simpleEntityMovementDirection, 30, entityObject, 1, LayerMask.GetMask("Player"), 0))
         {
             if (currentHitCooldown <= 0)
             {
@@ -28,9 +32,37 @@ public class EntityFighter : EntityWalker
                 currentHitCooldown = hitCooldown;
             }
         }
+        if (SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection) * -1, 30, entityObject, 6, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment")))
+        {
+            switch (currentMovementDirection)
+            {
+                case SimpleEntityMovementDirection.West:
+                    currentMovementDirection = SimpleEntityMovementDirection.East;
+                    break;
+                case SimpleEntityMovementDirection.East:
+                    currentMovementDirection = SimpleEntityMovementDirection.West;
+                    break;
+            }
+        }
+        if (SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection), 200, entityObject, 7, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 100))
+        {
+            inCombat = true;
+        }
+        else
+        {
+            inCombat = false;
+        }
         if (currentHitCooldown > 0)
         {
             currentHitCooldown -= Time.fixedDeltaTime;
+        }
+        if (inCombat)
+        {
+            maxSpeed = inCombatSpeed;
+        }
+        else
+        {
+            maxSpeed = outOfCombatSpeed;
         }
     }
 
@@ -41,11 +73,12 @@ public class EntityFighter : EntityWalker
         rq.duration = waitForHitTimer;
         rq.priority = 3;
         AddRequest(rq);
+        var startMovementDirection = currentMovementDirection;
         yield return new WaitForSeconds(waitForHitTimer);
 
         AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
         ctx.abilityDef = AbilityDef.Hit;
-        ctx.direction = GetAbilityDirectionFromEntityMovementDirction(GetEntityMovementDirectionFromSimpleEntityMovementDirection(currentMovementDirection));
+        ctx.direction = GetAbilityDirectionFromEntityMovementDirction(GetEntityMovementDirectionFromSimpleEntityMovementDirection(startMovementDirection));
         ctx.origin = AbilityOrigin.Entity;
         ctx.originObject = entityObject;
         ctx.entityController = this;

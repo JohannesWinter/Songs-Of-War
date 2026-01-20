@@ -424,7 +424,7 @@ public class EntityController : MonoBehaviour
 
     protected bool IsTouchingWall(SimpleEntityMovementDirection lastSimpleEMD, EntityMovementDirection eMD = EntityMovementDirection.None, float maxDistance = 0.1f)
     {
-        if (GetEntityMovementDirectionVector(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
+        if (GetVector2FromSimpleEntityMovementDirection(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)) == Vector2.zero) return false;
 
         Vector2 startPosition = (Vector2)entityObject.transform.position + Vector2.up * (-entityObject.transform.localScale.y / 2 + stepHeight);
         for (int i = 0; i < 10; i++)
@@ -433,7 +433,7 @@ public class EntityController : MonoBehaviour
             if (testPosition.y < startPosition.y && stepHeight < 1) continue;
             bool topHit = Physics2D.Raycast(
                 testPosition,
-                GetEntityMovementDirectionVector(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
+                GetVector2FromSimpleEntityMovementDirection(GetLastSimpleEntityMovementDirection(eMD, lastSimpleEMD)),
                 entityObject.transform.localScale.x / 2 + maxDistance,
                 groundLayer
                 );
@@ -469,7 +469,7 @@ public class EntityController : MonoBehaviour
         return groundDistance;
     }
 
-    public static Vector2 GetEntityMovementDirectionVector(EntityMovementDirection eMD)
+    public static Vector2 GetVector2FromEntityMovementDirection(EntityMovementDirection eMD)
     {
         switch (eMD)
         {
@@ -484,13 +484,13 @@ public class EntityController : MonoBehaviour
             default: return Vector2.zero;
         }
     }
-    public static Vector2 GetEntityMovementDirectionVector(SimpleEntityMovementDirection eMD)
+    public static Vector2 GetVector2FromSimpleEntityMovementDirection(SimpleEntityMovementDirection eMD)
     {
         switch (eMD)
         {
-            case SimpleEntityMovementDirection.East: return GetEntityMovementDirectionVector(EntityMovementDirection.East);
-            case SimpleEntityMovementDirection.West: return GetEntityMovementDirectionVector(EntityMovementDirection.West);
-            default: return GetEntityMovementDirectionVector(EntityMovementDirection.None);
+            case SimpleEntityMovementDirection.East: return GetVector2FromEntityMovementDirection(EntityMovementDirection.East);
+            case SimpleEntityMovementDirection.West: return GetVector2FromEntityMovementDirection(EntityMovementDirection.West);
+            default: return GetVector2FromEntityMovementDirection(EntityMovementDirection.None);
         }
     }
 
@@ -525,6 +525,10 @@ public class EntityController : MonoBehaviour
         {
             dead = true;
             remainingBodyTimer = bodyTimer;
+            var rq = new EntityRequest();
+            rq.type = EntityRequestType.UnlockVelocity;
+            rq.priority = 3;
+            AddRequest(rq);
             return true;
         }
         if (health < 0)
@@ -540,57 +544,40 @@ public class EntityController : MonoBehaviour
     }
 
     public static bool SimpleRaycastCheck(
-        SimpleEntityMovementDirection direction,
+        SimpleEntityMovementDirection simpleDirection,
         float spreadAngle,
         GameObject originObject,
         float distance,
-        LayerMask layerMask,
+        LayerMask hitMask,
+        LayerMask blockMask,
         int rayCount = 10
     )
     {
-        if (direction == SimpleEntityMovementDirection.None)
+        
+        if (simpleDirection == SimpleEntityMovementDirection.None)
             return false;
 
-        Vector2 baseDir = direction == SimpleEntityMovementDirection.East ? Vector2.right : Vector2.left;
-        Vector2 origin = originObject.transform.position;
 
-        if (rayCount < 1) rayCount = 1;
-        float halfSpread = spreadAngle * 0.5f;
+        Vector2 direction = simpleDirection == SimpleEntityMovementDirection.East ? Vector2.right : Vector2.left;
 
-        for (int i = 0; i < rayCount; i++)
-        {
-            float t = rayCount == 1 ? 0.5f : (float)i / (rayCount - 1);
-            float angle = Mathf.Lerp(-halfSpread, halfSpread, t);
-
-            Vector2 dir = Quaternion.Euler(0, 0, angle) * baseDir;
-
-            RaycastHit2D hit = Physics2D.Raycast(origin, dir, distance, layerMask);
-            Debug.DrawRay(origin, dir * distance, hit ? Color.red : Color.green, 0.05f);
-
-
-            if (hit.collider != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return SimpleRaycastCheck(direction, spreadAngle, originObject, distance, hitMask, blockMask, rayCount);
     }
 
     public static bool SimpleRaycastCheck(
-    Vector2 direction,
-    float spreadAngle,
-    GameObject originObject,
-    float distance,
-    LayerMask layerMask,
-    int rayCount = 10
-)
+        Vector2 direction,
+        float spreadAngle,
+        GameObject originObject,
+        float distance,
+        LayerMask hitMask,
+        LayerMask blockMask,
+        int rayCount = 10
+    )
     {
         if (direction == Vector2.zero)
             return false;
 
-        Vector2 baseDir = direction;
         Vector2 origin = originObject.transform.position;
+        direction.Normalize();
 
         if (rayCount < 1) rayCount = 1;
         float halfSpread = spreadAngle * 0.5f;
@@ -599,16 +586,30 @@ public class EntityController : MonoBehaviour
         {
             float t = rayCount == 1 ? 0.5f : (float)i / (rayCount - 1);
             float angle = Mathf.Lerp(-halfSpread, halfSpread, t);
+            Vector2 dir = Quaternion.Euler(0, 0, angle) * direction;
 
-            Vector2 dir = Quaternion.Euler(0, 0, angle) * baseDir;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(origin, dir, distance, hitMask | blockMask);
 
-            RaycastHit2D hit = Physics2D.Raycast(origin, dir, distance, layerMask);
-            Debug.DrawRay(origin, dir * distance, hit ? Color.red : Color.green, 0.05f);
+            if (hits.Length == 0)
+                continue;
 
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-            if (hit.collider != null)
+            foreach (var hit in hits)
             {
-                return true;
+                int layerBit = 1 << hit.collider.gameObject.layer;
+
+                if ((blockMask & layerBit) != 0)
+                {
+                    Debug.DrawRay(origin, dir * distance, Color.yellow, 0.1f);
+                    break;
+                }
+
+                if ((hitMask & layerBit) != 0)
+                {
+                    Debug.DrawRay(origin, dir * distance, Color.green, 0.1f);
+                    return true;
+                }
             }
         }
 
