@@ -28,6 +28,8 @@ public class AbilityManager : MonoBehaviour
         {
             case AbilityDef.Hit:
                 return abilityObjects[0];
+            case AbilityDef.EntityFighterHit:
+                return abilityObjects[1];
             default:
                 return null;
         }
@@ -36,6 +38,7 @@ public class AbilityManager : MonoBehaviour
 public enum AbilityDef
 {
     Hit,
+    EntityFighterHit,
 }
 public enum AbilityType
 {

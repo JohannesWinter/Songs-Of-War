@@ -49,6 +49,11 @@ public class PlayerHitboxController : MonoBehaviour
             rq.duration = 0.3f;
             pc.AddRequest(rq);
 
+            rq = new PlayerMovementRequest();
+            rq.type = PlayerMovementRequestType.UnlockVelocity;
+            rq.priority = 3;
+            pc.AddRequest(rq);
+
             var rq2 = new PlayerStatsRequest();
             rq2.type = PlayerStatsRequestType.AddHealth;
             rq2.priority = 2;

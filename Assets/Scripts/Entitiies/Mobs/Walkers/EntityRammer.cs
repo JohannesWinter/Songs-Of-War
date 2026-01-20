@@ -14,21 +14,30 @@ public class EntityRammer : EntityWalker
 
     protected override void FixedUpdate()
     {
-        CheckRam();
+        UpdateRam();
         base.FixedUpdate();
     }
 
-    protected virtual void CheckRam()
+    protected virtual void UpdateRam()
     {
-        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, startRamDistance, LayerMask.GetMask("Player")) && currentRamCooldown < 0)
+        if (currentRamCooldown <= 0 && CheckRam())
         {
-            ramming = true;
             currentRamCooldown = ramCooldown;
+            ramming = true;
         }
         if (currentRamCooldown > 0)
         {
             currentRamCooldown -= Time.fixedDeltaTime;
         }
+    }
+
+    protected virtual bool CheckRam()
+    {
+        if (SimpleRaycastCheck(currentMovementDirection, 30, entityObject, startRamDistance, LayerMask.GetMask("Player")))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected override void BaseMovement()
@@ -73,5 +82,14 @@ public class EntityRammer : EntityWalker
                 }
             }
         }
+    }
+
+    protected override void OnHitboxHit(HitboxTrigger other)
+    {
+        if (CheckRam())
+        {
+            ramming = false;
+        }
+        base.OnHitboxHit(other);
     }
 }

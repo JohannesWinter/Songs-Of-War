@@ -52,6 +52,11 @@ public class EntityController : MonoBehaviour
     // Update is called once per frame
     protected virtual void FixedUpdate()
     {
+        BaseControllerUpdate();
+    }
+
+    protected void BaseControllerUpdate()
+    {
         CheckDeath();
         ProcessRequests();
         CheckParameterAccessibility();
