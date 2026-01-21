@@ -26,6 +26,8 @@ public class EntityController : MonoBehaviour
     List<PlayerRequestTimer> gravityLockTimers = new List<PlayerRequestTimer>();
     public bool velocityLocked { get; private set; }
     List<PlayerRequestTimer> velocityLockTimers = new List<PlayerRequestTimer>();
+    public bool unstoppable { get; private set; }
+    List<PlayerRequestTimer> unstoppableTimers = new List<PlayerRequestTimer>();
 
     public EntityMovementDirection entityMovementDirection;
     public SimpleEntityMovementDirection simpleEntityMovementDirection;
@@ -44,6 +46,7 @@ public class EntityController : MonoBehaviour
     float remainingBodyTimer;
     public float friction;
     public float gottenKnockback;
+    public float deathGottenKnockback;
     void Start()
     {
         rb.gravityScale = 0;
@@ -147,6 +150,22 @@ public class EntityController : MonoBehaviour
                 case EntityRequestType.OverrideGravity:
                     gravity = r.values[0];
                     break;
+
+                case EntityRequestType.LockUnstoppable:
+                    pRT.remaining = r.duration;
+                    pRT.priority = r.priority;
+                    unstoppableTimers.Add(pRT);
+                    break;
+
+                case EntityRequestType.UnlockUnstoppable:
+                    for (int i = unstoppableTimers.Count - 1; i >= 0; i--)
+                    {
+                        if (unstoppableTimers[i].priority <= r.priority)
+                        {
+                            unstoppableTimers[i].remaining = 0;
+                        }
+                    }
+                    break;
             }
         }
         UpdatePriorities();
@@ -186,6 +205,17 @@ public class EntityController : MonoBehaviour
         }
         if (velocityLockTimers.Count <= 0) velocityLocked = false;
         else velocityLocked = true;
+
+        for (int i = unstoppableTimers.Count - 1; i >= 0; i--)
+        {
+            unstoppableTimers[i].remaining -= Time.fixedDeltaTime;
+            if (unstoppableTimers[i].remaining <= 0)
+            {
+                unstoppableTimers.RemoveAt(i);
+            }
+        }
+        if (unstoppableTimers.Count <= 0) unstoppable = false;
+        else unstoppable = true;
     }
 
     public void AddRequest(EntityRequest request)
@@ -529,6 +559,12 @@ public class EntityController : MonoBehaviour
             rq.type = EntityRequestType.UnlockVelocity;
             rq.priority = 3;
             AddRequest(rq);
+
+            rq = new EntityRequest();
+            rq.type = EntityRequestType.UnlockUnstoppable;
+            rq.priority = 3;
+            AddRequest(rq);
+
             return true;
         }
         if (health < 0)
@@ -579,6 +615,26 @@ public class EntityController : MonoBehaviour
         Vector2 origin = originObject.transform.position;
         direction.Normalize();
 
+
+        RaycastHit2D hit = RaycastCheck(direction, spreadAngle, originObject, distance, hitMask, blockMask, rayCount);
+        return hit.collider != null;
+    }
+
+    public static RaycastHit2D RaycastCheck(
+        Vector2 direction,
+        float spreadAngle,
+        GameObject originObject,
+        float distance,
+        LayerMask hitMask,
+        LayerMask blockMask,
+        int rayCount = 10)
+    {
+        if (direction == Vector2.zero)
+            return new RaycastHit2D();
+
+        Vector2 origin = originObject.transform.position;
+        direction.Normalize();
+
         if (rayCount < 1) rayCount = 1;
         float halfSpread = spreadAngle * 0.5f;
 
@@ -608,11 +664,11 @@ public class EntityController : MonoBehaviour
                 if ((hitMask & layerBit) != 0)
                 {
                     Debug.DrawRay(origin, dir * distance, Color.green, 0.1f);
-                    return true;
+                    return hit;
                 }
             }
         }
 
-        return false;
+        return new RaycastHit2D();
     }
 }

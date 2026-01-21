@@ -46,6 +46,8 @@ public enum EntityRequestType
     LockVelocity,
     UnlockVelocity,
     OverrideGravity,
+    LockUnstoppable,
+    UnlockUnstoppable,
 }
 public struct EntityRequest
 {

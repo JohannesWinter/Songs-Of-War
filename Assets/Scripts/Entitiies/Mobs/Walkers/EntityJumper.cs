@@ -2,35 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EntityFighter : EntityWalker
+public class EntityJumper : EntityWalker
 {
-    public float hitCooldown;
-    public float waitForHitTimer;
+    public float jumpCooldown;
+    public float waitForJumpTimer;
+    public float waitForJumpFinish;
     public float outOfCombatSpeed;
     //overrides normal speed
     public float inCombatSpeed;
-    public float hitTriggerRange;
-    float currentHitCooldown;
+    public float jumpTriggerRange;
+    public float jumpPower;
+    public float jumpHeight;
+    float currentJumpCooldown;
     bool inCombat;
-    
+
     Coroutine castingHitRoutine;
 
     protected override void FixedUpdate()
     {
-        if (castingHitRoutine == null || dead == false)
+        if (castingHitRoutine == null)
         {
             base.FixedUpdate();
         }
         else
         {
             BaseControllerUpdate();
-        }
-        if (SimpleRaycastCheck(simpleEntityMovementDirection, 360, entityObject, hitTriggerRange, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment")) && dead == false && IsGrounded())
-        {
-            if (currentHitCooldown <= 0)
+            if (IsGrounded())
             {
-                castingHitRoutine = StartCoroutine(CastHit());
-                currentHitCooldown = hitCooldown;
+                velocity = CheckFriction(velocity);
+            }
+        }
+        if (SimpleRaycastCheck(simpleEntityMovementDirection, 360, entityObject, jumpTriggerRange, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 100))
+        {
+            if (currentJumpCooldown <= 0)
+            {
+                castingHitRoutine = StartCoroutine(JumpAttack());
+                currentJumpCooldown = jumpCooldown;
             }
         }
         if (SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection) * -1, 30, entityObject, 6, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment")))
@@ -53,9 +60,9 @@ public class EntityFighter : EntityWalker
         {
             inCombat = false;
         }
-        if (currentHitCooldown > 0)
+        if (currentJumpCooldown > 0)
         {
-            currentHitCooldown -= Time.fixedDeltaTime;
+            currentJumpCooldown -= Time.fixedDeltaTime;
         }
         if (inCombat)
         {
@@ -67,42 +74,41 @@ public class EntityFighter : EntityWalker
         }
     }
 
-    IEnumerator CastHit()
+    protected virtual IEnumerator JumpAttack()
     {
         var rq = new EntityRequest();
-        rq.type = EntityRequestType.LockMovement;
-        rq.duration = waitForHitTimer + 0.2f;
-        rq.priority = 2;
-        AddRequest(rq);
-        rq = new EntityRequest();
-        rq.type = EntityRequestType.SetVelocity ;
-        rq.vector = Vector2.zero;
-        rq.priority = 2;
-        AddRequest(rq);
-        rq = new EntityRequest();
         rq.type = EntityRequestType.LockUnstoppable;
-        rq.duration = waitForHitTimer + 0.2f;
+        rq.duration = waitForJumpTimer + 1f;
         rq.priority = 2;
         AddRequest(rq);
-        var startMovementDirection = currentMovementDirection;
-        yield return new WaitForSeconds(waitForHitTimer);
+
+        rq = new EntityRequest();
+        rq.type = EntityRequestType.SetVelocity;
+        Vector2 veloc = this.velocity;
+        rq.vector = new Vector2(0, veloc.y);
+        rq.priority = 2;
+        AddRequest(rq);
+        yield return new WaitForSeconds(waitForJumpTimer);
         if (dead)
         {
+            rq = new EntityRequest();
+            rq.type = EntityRequestType.UnlockUnstoppable;
+            rq.priority = 3;
+            AddRequest(rq);
             castingHitRoutine = null;
             yield break;
         }
+        Vector2 jumpDir = GetVector2FromSimpleEntityMovementDirection(currentMovementDirection);
+        jumpDir.y = jumpHeight;
+        jumpDir.x *= jumpPower;
 
-        AbilityContext ctx = Instantiate(Manager.m.abilityManager.abilityContext);
-        ctx.abilityDef = AbilityDef.Hit;
-        ctx.direction = GetAbilityDirectionFromEntityMovementDirction(GetEntityMovementDirectionFromSimpleEntityMovementDirection(startMovementDirection));
-        ctx.origin = AbilityOrigin.Entity;
-        ctx.originObject = entityObject;
-        ctx.entityController = this;
-        ctx.damage = this.damage;
-        ctx.abilityDef = AbilityDef.EntityFighterHit;
-        ctx.knockBack = this.knockBack;
-        (_, var hitAbility) = Manager.m.abilityManager.RunAbility(ctx);
-        while (hitAbility != null) yield return null;
+
+        rq = new EntityRequest();
+        rq.type = EntityRequestType.SetVelocity;
+        rq.priority = 2;
+        rq.vector = jumpDir;
+        AddRequest(rq);
+        yield return new WaitForSeconds(waitForJumpFinish);
         castingHitRoutine = null;
     }
 }

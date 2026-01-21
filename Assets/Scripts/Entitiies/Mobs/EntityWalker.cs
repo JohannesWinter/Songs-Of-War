@@ -10,6 +10,7 @@ public class EntityWalker : EntityController
     public SimpleEntityMovementDirection currentMovementDirection = SimpleEntityMovementDirection.East;
     public float knockBack;
     public int damage;
+    public bool baseWalk;
     public void Start()
     {
         hitboxTriggers[0].onHit += OnHitboxHit;
@@ -20,46 +21,49 @@ public class EntityWalker : EntityController
 
     protected override void FixedUpdate()
     {
-        if (dead == false)
+        if (dead == false && baseWalk)
         {
             BaseMovement();
             TryStepUp(velocity);
         }
-        else velocity = CheckFriction(velocity);
+        else if (IsGrounded()) velocity = CheckFriction(velocity);
         base.FixedUpdate();
     }
 
     protected virtual void BaseMovement()
     {
-        if (currentMovementDirection == SimpleEntityMovementDirection.East)
+        if (movementLocked == false)
         {
-            if (velocity.x < maxSpeed)
+            if (currentMovementDirection == SimpleEntityMovementDirection.East)
             {
-                velocity.x += 1 * Time.fixedDeltaTime * acceleration;
-            }
-            else if (velocity.x > maxSpeed + 0.1f)
-            {
-                velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
-            }
-            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
-            {
-                currentMovementDirection = SimpleEntityMovementDirection.West;
-            }
+                if (velocity.x < maxSpeed)
+                {
+                    velocity.x += 1 * Time.fixedDeltaTime * acceleration;
+                }
+                else if (velocity.x > maxSpeed + 0.1f)
+                {
+                    velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
+                }
+                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                {
+                    currentMovementDirection = SimpleEntityMovementDirection.West;
+                }
 
-        }
-        if (currentMovementDirection == SimpleEntityMovementDirection.West)
-        {
-            if (velocity.x > -maxSpeed)
-            {
-                velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
             }
-            else if (velocity.x < -maxSpeed - 0.1f)
+            if (currentMovementDirection == SimpleEntityMovementDirection.West)
             {
-                velocity.x += 1 * Time.fixedDeltaTime * acceleration;
-            }
-            if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
-            {
-                currentMovementDirection = SimpleEntityMovementDirection.East;
+                if (velocity.x > -maxSpeed)
+                {
+                    velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
+                }
+                else if (velocity.x < -maxSpeed - 0.1f)
+                {
+                    velocity.x += 1 * Time.fixedDeltaTime * acceleration;
+                }
+                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                {
+                    currentMovementDirection = SimpleEntityMovementDirection.East;
+                }
             }
         }
     }
@@ -71,14 +75,19 @@ public class EntityWalker : EntityController
             return;
         }
         health -= ctx.damage;
-        Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position).normalized;
-        Vector2 oppositePosition = relativePosition * -1; 
-        Vector2 knockBack = oppositePosition * gottenKnockback * ctx.knockback;
-        if (IsGrounded())
+        if (unstoppable && health > 0) return;
+        Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position);
+        Vector2 knockBackDir = relativePosition * -1;
+        if (knockBackDir.x >= 0)
         {
-            knockBack.y = gottenKnockback;
+            knockBackDir.x = gottenKnockback;
         }
-        if (health < 0) knockBack *= 2;
-        velocity = knockBack;
+        else
+        {
+            knockBackDir.x = -gottenKnockback;
+        }
+        knockBackDir.y = gottenKnockback;
+        if (health < 0) knockBackDir *= deathGottenKnockback;
+        velocity = knockBackDir;
     }
 }

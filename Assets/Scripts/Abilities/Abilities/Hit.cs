@@ -14,7 +14,6 @@ public class Hit : Ability
     public GameObject swCol;
 
     public float duration;
-    public float knockBack;
     bool hitSomething;
 
     float remainingDuration;
