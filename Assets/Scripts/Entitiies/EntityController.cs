@@ -34,7 +34,6 @@ public class EntityController : MonoBehaviour
     protected EntityMovementDirection lastEntityMovementDirection;
     protected SimpleEntityMovementDirection lastSimpleEntityMovementDirection;
     public HitboxTrigger[] hitboxTriggers;
-    public EntityPlayerdetector playerdetector;
 
     public float gravity;
     public float maxFallSpeed;
@@ -45,8 +44,8 @@ public class EntityController : MonoBehaviour
     public float bodyTimer;
     float remainingBodyTimer;
     public float friction;
-    public float gottenKnockback;
-    public float deathGottenKnockback;
+    public Vector2 gottenKnockback;
+    public Vector2 deathGottenKnockback;
     void Start()
     {
         rb.gravityScale = 0;
@@ -577,6 +576,21 @@ public class EntityController : MonoBehaviour
             entityHitbox.enabled = false;
         }
         return false;
+    }
+
+    public void GenerateAndAddRequest(EntityRequestType entityRequestType, float duration = 0, int priority = 0)
+    {
+        GenerateAndAddRequest(entityRequestType, Vector2.zero, new float[0], duration, priority);
+    }
+    public void GenerateAndAddRequest(EntityRequestType entityRequestType, Vector2 vector, float[] values,float duration = 0, int priority = 0)
+    {
+        var rq = new EntityRequest();
+        rq.type = entityRequestType;
+        rq.priority = priority;
+        rq.vector = vector;
+        rq.duration = duration;
+        rq.values = values;
+        AddRequest(rq);
     }
 
     public static bool SimpleRaycastCheck(

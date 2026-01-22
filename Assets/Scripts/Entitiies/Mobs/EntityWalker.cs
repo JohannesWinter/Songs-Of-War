@@ -78,16 +78,11 @@ public class EntityWalker : EntityController
         if (unstoppable && health > 0) return;
         Vector2 relativePosition = (ctx.originObject.transform.position - entityObject.transform.position);
         Vector2 knockBackDir = relativePosition * -1;
-        if (knockBackDir.x >= 0)
-        {
-            knockBackDir.x = gottenKnockback;
-        }
-        else
-        {
-            knockBackDir.x = -gottenKnockback;
-        }
-        knockBackDir.y = gottenKnockback;
-        if (health < 0) knockBackDir *= deathGottenKnockback;
-        velocity = knockBackDir;
+        Vector2 knockBack = this.gottenKnockback;
+        knockBack.x *= knockBackDir.x;
+        Vector2 deathKnockBack = this.deathGottenKnockback;
+        deathGottenKnockback.x *= knockBackDir.x;
+        if (health < 0) knockBack = deathGottenKnockback;
+        velocity = knockBack;
     }
 }
