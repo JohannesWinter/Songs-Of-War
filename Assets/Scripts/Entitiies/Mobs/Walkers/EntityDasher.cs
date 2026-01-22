@@ -19,10 +19,13 @@ public class EntityDasher : EntityWalker
 
     protected override void FixedUpdate()
     {
-        if (currentDash != null && dead)
+        if (dead)
         {
-            StopCoroutine(currentDash);
-            currentDash = null;
+            if (currentDash != null)
+            {
+                StopCoroutine(currentDash);
+                currentDash = null;
+            }
             GenerateAndAddRequest(EntityRequestType.LockMovement, Vector2.zero, null, bodyTimer, 3);
             GenerateAndAddRequest(EntityRequestType.UnlockGravity, 0, 3);
             GenerateAndAddRequest(EntityRequestType.UnlockVelocity, 0, 3);
@@ -31,7 +34,9 @@ public class EntityDasher : EntityWalker
         if (currentDash == null)
         {
             base.FixedUpdate();
-            if (SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection) * -1, 140, entityObject, inCombat ? minDistance : 6, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 45))
+            int inverted = currentDashCooldown > 0 ? -1 : 1;
+
+            if (IsAtLedge(currentMovementDirection) <= stepHeight && IsAtLedge(GetSimpleMovementDirectionInverted(currentMovementDirection)) <= stepHeight && SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection) * -1 * inverted, 140, entityObject, inCombat ? minDistance : 6, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 45))
             {
                 switch (currentMovementDirection)
                 {

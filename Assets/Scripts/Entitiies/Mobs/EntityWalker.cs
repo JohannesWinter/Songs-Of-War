@@ -44,7 +44,7 @@ public class EntityWalker : EntityController
                 {
                     velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
                 }
-                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                if (IsGrounded() && (IsAtLedge( currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
                 {
                     currentMovementDirection = SimpleEntityMovementDirection.West;
                 }
@@ -60,7 +60,7 @@ public class EntityWalker : EntityController
                 {
                     velocity.x += 1 * Time.fixedDeltaTime * acceleration;
                 }
-                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                if (IsGrounded() && (IsAtLedge( currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
                 {
                     currentMovementDirection = SimpleEntityMovementDirection.East;
                 }

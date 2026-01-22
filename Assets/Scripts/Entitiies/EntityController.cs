@@ -612,6 +612,18 @@ public class EntityController : MonoBehaviour
 
         return SimpleRaycastCheck(direction, spreadAngle, originObject, distance, hitMask, blockMask, rayCount);
     }
+    public SimpleEntityMovementDirection GetSimpleMovementDirectionInverted(SimpleEntityMovementDirection sEMD)
+    {
+        switch (sEMD)
+        {
+            case SimpleEntityMovementDirection.East:
+                return SimpleEntityMovementDirection.West;
+            case SimpleEntityMovementDirection.West:
+                return SimpleEntityMovementDirection.East;
+            default:
+                return SimpleEntityMovementDirection.None;
+        }
+    }
 
     public static bool SimpleRaycastCheck(
         Vector2 direction,
