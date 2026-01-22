@@ -11,13 +11,15 @@ public class EntityFighter : EntityWalker
     public float inCombatSpeed;
     public float hitTriggerRange;
     float currentHitCooldown;
+    public float minDistance;
+    GameObject currentEnemyObject;
     bool inCombat;
     
     Coroutine castingHitRoutine;
 
     protected override void FixedUpdate()
     {
-        if (castingHitRoutine == null || dead == false)
+        if (castingHitRoutine == null)
         {
             base.FixedUpdate();
         }
@@ -47,11 +49,14 @@ public class EntityFighter : EntityWalker
         }
         if (SimpleRaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection), 200, entityObject, 7, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 100))
         {
+            var playerCast = RaycastCheck(GetVector2FromSimpleEntityMovementDirection(currentMovementDirection), 200, entityObject, 7, LayerMask.GetMask("Player"), LayerMask.GetMask("Enviroment"), 100);
+            currentEnemyObject = playerCast.collider.gameObject;
             inCombat = true;
         }
         else
         {
             inCombat = false;
+            currentEnemyObject = null;
         }
         if (currentHitCooldown > 0)
         {
@@ -64,6 +69,46 @@ public class EntityFighter : EntityWalker
         else
         {
             maxSpeed = outOfCombatSpeed;
+        }
+    }
+
+    protected virtual void FightMovement()
+    {
+        if (movementLocked == false && currentEnemyObject != null)
+        {
+            print(currentEnemyObject);
+            print((entityObject.transform.position - currentEnemyObject.transform.position).magnitude);
+            if (currentMovementDirection == SimpleEntityMovementDirection.East)
+            {
+                if (velocity.x < maxSpeed)
+                {
+                    velocity.x += 1 * Time.fixedDeltaTime * acceleration;
+                }
+                else if (velocity.x > maxSpeed + 0.1f)
+                {
+                    velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
+                }
+                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                {
+                    currentMovementDirection = SimpleEntityMovementDirection.West;
+                }
+
+            }
+            if (currentMovementDirection == SimpleEntityMovementDirection.West)
+            {
+                if (velocity.x > -maxSpeed)
+                {
+                    velocity.x -= 1 * Time.fixedDeltaTime * acceleration;
+                }
+                else if (velocity.x < -maxSpeed - 0.1f)
+                {
+                    velocity.x += 1 * Time.fixedDeltaTime * acceleration;
+                }
+                if (IsGrounded() && (IsAtLedge(currentMovementDirection, distance: walkwayEndReactionSpeed / acceleration, minLedgeDepth: stepHeight) > 0 || IsTouchingWall(currentMovementDirection, maxDistance: walkwayEndReactionSpeed / acceleration)))
+                {
+                    currentMovementDirection = SimpleEntityMovementDirection.East;
+                }
+            }
         }
     }
 
