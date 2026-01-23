@@ -5,6 +5,8 @@ using UnityEngine;
 public class EntitySlasher : EntityWalker
 {
     public float slashCooldown;
+    public float slashCooldownRandomMinMult;
+    public float slashCooldownRandomMaxMult;
     public float upJumpTimer;
     public float noJumpTimer;
     public float forwardSlashTimer;
@@ -65,7 +67,7 @@ public class EntitySlasher : EntityWalker
             if ((ray.collider.gameObject.transform.position - entityObject.transform.position).magnitude < slashTriggerRange && currentDashCooldown <= 0)
             {
                 currentDash = StartCoroutine(SlashAttack(Random.Range(0,2) == 0));
-                currentDashCooldown = slashCooldown;
+                currentDashCooldown = slashCooldown * Random.Range(slashCooldownRandomMinMult, slashCooldownRandomMaxMult);
             }
         }
         else
